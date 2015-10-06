@@ -1,5 +1,5 @@
 #ignore compiled python
-*.pyc
+qgreports/*.pyc
 
 #ignore settings
-settings.py
+qgreports/settings.py
