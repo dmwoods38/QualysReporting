@@ -19,3 +19,4 @@ easier to setup I can definitely provide instructions.
 # Requirements
 * SQLAlchemy
 * Requests
+* Psycopg2

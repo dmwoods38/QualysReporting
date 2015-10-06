@@ -1,5 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Sequence
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy import Sequence
 import settings
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL

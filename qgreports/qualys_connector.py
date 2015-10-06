@@ -14,7 +14,9 @@ debug = settings.debug
 # Params: Strings for username and password
 # Optional headers to include with login request
 # Return: Returns session 
-def login(username, password, headers=xreq_header, params={}):
+def login(username, password, headers=xreq_header, params=None):
+    if params is None:
+        params = {}
     params.update({"action": "login", "username": username})
     params.update({"password": password})
     r = requests.Session()
@@ -30,7 +32,9 @@ def login(username, password, headers=xreq_header, params={}):
 
 # Params: Session to logout of 
 #         Optional headers to include with logout request
-def logout(session, headers=xreq_header, params={}):	
+def logout(session, headers=xreq_header, params=None):
+    if params is None:
+        params = {}
     params.update({"action": "logout"})
     s = request(params, session, session_path, headers=headers, verb="post")
     if check_status(s):
@@ -85,7 +89,9 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
 
 
 # Return: Returns XML with the VM scan list
-def get_scans(session, params={}):
+def get_scans(session, params=None):
+    if params is None:
+        params = {}
     params.update({"action": "list"})
     dest_url = "/api/2.0/fo/scan/"
     response = request(params, session, dest_url)
@@ -98,8 +104,10 @@ def get_scans(session, params={}):
 
 # Returns a dict of processed and unprocessed scans
 #     which is in turn a dict of scan title and scan references
-def get_scan_refs(scan_names, session, params={}, latest=True,
+def get_scan_refs(scan_names, session, params=None, latest=True,
                   scans_list=None):
+    if params is None:
+        params = {}
     if scans_list is None:
         scans_list = get_scans(session, params)
     scan_xml = ET.fromstring(scans_list.encode('ascii', 'ignore'))
@@ -127,8 +135,12 @@ def get_scan_refs(scan_names, session, params={}, latest=True,
 
 # Description: Launches scan reports and then returns the refs
 #              with the corresponding report ids
-def launch_scan_reports(scans_with_refs, session, formats=["csv"], params={}):
-    params.update({"report_type":"Scan", "action": "launch"})
+def launch_scan_reports(scans_with_refs, session, formats=None, params=None):
+    if formats is None:
+        formats = ['csv']
+    if params is None:
+        params = {}
+    params.update({"report_type": "Scan", "action": "launch"})
     params.update({"template_id": settings.QualysAPI['scan_template']})
     dest_url = "/api/2.0/fo/report/"
     refs_with_ids = {}
@@ -137,10 +149,10 @@ def launch_scan_reports(scans_with_refs, session, formats=["csv"], params={}):
     unprocessed = scans_with_refs['unprocessed']
     for scan in processed:
         for ref in processed[scan]:
-            params.update({"report_refs":ref})
+            params.update({"report_refs": ref})
             ids = []
             for format in formats:
-                params.update({"output_format":format})
+                params.update({"output_format": format})
                 # make request then parse xml for report id
                 response = request(params, session, dest_url)
                 report_xml = ET.fromstring(
@@ -152,7 +164,7 @@ def launch_scan_reports(scans_with_refs, session, formats=["csv"], params={}):
                         break
                 if debug:
                     print response.text
-            refs_with_ids.update({ref:ids})
+            refs_with_ids.update({ref: ids})
 
     if len(unprocessed):
         with open("/root/unprocessed.log", "a") as f:
@@ -190,7 +202,7 @@ def check_report_status(refs_with_ids, session):
 # Download reports
 # TODO: Create objects that store scan ref(s), report id(s), and report names
 def get_reports(refs_with_ids, scans_with_refs, snames_with_rnames, session):
-    params = {"action":"fetch"}
+    params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
     today = datetime.date.today().__str__()
     report_path = "/root/reports/"
@@ -200,10 +212,10 @@ def get_reports(refs_with_ids, scans_with_refs, snames_with_rnames, session):
     print "refs_with_ids : " + refs_with_ids.__str__()
     print "scans_with_refs : " + scans_with_refs.__str__()
     print "snames_with_rnames : " + snames_with_rnames.__str__()
-    for scan_ref,report_id in refs_with_ids.iteritems():
-        for scan_name,refs in scans_with_refs.iteritems():
+    for scan_ref, report_id in refs_with_ids.iteritems():
+        for scan_name, refs in scans_with_refs.iteritems():
             if scan_ref in refs:
-                params.update({"id":report_id})
+                params.update({"id": report_id})
                 report_name = snames_with_rnames[scan_name]
                 if not len(report_name):
                     report_name = scan_name
@@ -217,18 +229,21 @@ def get_reports(refs_with_ids, scans_with_refs, snames_with_rnames, session):
 
 def get_scan_results(scans_with_refs, session, scans_with_files,
                             folder="/root/reports/",
-                            format="csv",latest=True, params={}):
-    params.update({"action":"fetch","mode":"brief", "output_format": format})
+                            format="csv",latest=True, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "fetch", "mode": "brief",
+                   "output_format": format})
     dest_url = "/api/2.0/fo/scan/"
     processed = scans_with_refs['processed']
     unprocessed = scans_with_refs['unprocessed']
     for scan in processed:
         for ref in processed[scan]:
-            params.update({"scan_ref":ref})
+            params.update({"scan_ref": ref})
             response = request(params, session, dest_url)
             file = scans_with_files[scan] if scans_with_files[scan] else scan
             filename = folder + file
-            filename = filename +"_"+datetime.date.today().__str__()
+            filename = filename + "_" + datetime.date.today().__str__()
             filename += "." + format
             with open(filename, "a") as f:
                 f.write(response.text)

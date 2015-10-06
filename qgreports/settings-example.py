@@ -3,7 +3,6 @@ __author__ = 'dmwoods38'
 debug = False
 
 DATABASE = {
-    "comment": "Works for DBs that are supported by SQLAlchemy.",
     "db_type": "postgresql",
     "db_name": "qualysguard",
     "db_user": "postgres",
@@ -21,7 +20,7 @@ QualysAPI = {
 }
 
 # where reports are temporarily stored before being emailed.
-report_folder = ""
+report_folder = ''
 
 # sender
 email_from = ''

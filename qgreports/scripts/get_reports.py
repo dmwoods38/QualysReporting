@@ -15,6 +15,7 @@ __author__ = "dmwoods38"
 user = qgreports.settings.QualysAPI['username']
 password = qgreports.settings.QualysAPI['password']
 report_folder = qgreports.settings.report_folder
+archive_folder = qgreports.settings.archive_folder
 email_from = qgreports.settings.email_from
 smtp_server = qgreports.settings.smtp_server
 # TODO: This needs to be fixed to pull from the db.
