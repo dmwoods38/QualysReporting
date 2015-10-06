@@ -21,5 +21,6 @@ easier to setup I can definitely provide instructions.
 * SQLAlchemy
 * Requests
 * Psycopg2
-##
+
+## Other requirements
 * Some sort of database (only tested on postgresql for now).
