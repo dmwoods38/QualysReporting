@@ -1,0 +1,29 @@
+[
+  {
+    "report_title":"title1",
+    "asset_groups":"assetgroup1",
+    "output_pdf":"True",
+    "output_csv":"True",
+    "scan_title":"scan1",
+    "email_list":"test@test.com",
+    "list_name":"test dl1"
+  },
+  {
+    "report_title":"title2",
+    "asset_groups":"assetgroup2, assetgroup3",
+    "output_pdf":"True",
+    "output_csv":"False",
+    "scan_title":"scan2",
+    "email_list":"test@test.com, myuser@mydomain.com",
+    "list_name":"test dl2"
+  },
+  {
+    "report_title":"title3",
+    "asset_groups":"assetgroup2, assetgroup3",
+    "output_pdf":"True",
+    "output_csv":"False",
+    "scan_title":"scan2",
+    "email_list":"test@test.com, myuser@mydomain.com",
+    "list_name":"test dl2"
+  }
+]

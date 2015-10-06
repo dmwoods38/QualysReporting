@@ -17,6 +17,9 @@ That said, if there is any desire to get this setup before I have made this
 easier to setup I can definitely provide instructions.
 
 # Requirements
+## Python Packages
 * SQLAlchemy
 * Requests
 * Psycopg2
+##
+* Some sort of database (only tested on postgresql for now).

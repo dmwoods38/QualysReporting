@@ -19,6 +19,7 @@ class QGScan(Base):
 class QGEmail(Base):
     __tablename__ = 'qgemails'
     id = Column(Integer, Sequence('qgemails_seq_id'), primary_key=True)
+    list_name = Column(String, nullable=False, unique=True)
     email_list = Column(String, nullable=False)
 
 
@@ -28,13 +29,14 @@ class QGReport(Base):
     asset_groups = Column(String)
     scan_id = Column(Integer, ForeignKey('qgscans.id'), nullable=False)
     email_id = Column(Integer, ForeignKey('qgemails.id'), nullable=False)
-    report_title = Column(String)
+    report_title = Column(String, nullable=False)
     next_report_run = Column(DateTime)
-    output_pdf = Column(Boolean)
-    output_csv = Column(Boolean)
-    active = Column(Boolean)
+    output_pdf = Column(Boolean, nullable=False)
+    output_csv = Column(Boolean, nullable=False)
+    active = Column(Boolean, default=True)
 
 
 def db_init():
     engine = create_engine(URL(**settings.DATABASE))
     Base.metadata.create_all(engine)
+    return engine
