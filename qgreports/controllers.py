@@ -21,19 +21,24 @@ class QGScanController:
                                         next_run=next_run)
         self.db_session.add(entry)
 
+    # TODO: Update next scan run date using the API
+
 
 class QGReportController:
     def __init__(self, db_session):
         self.db_session = db_session
 
     def add_report(self, asset_groups, scan_id, email_id, report_title,
-                   next_report_run=None, output_pdf=None,
+                   report_run=None, output_pdf=None,
                    output_csv=None, active=True):
         entry = qgreports.models.QGReport(asset_groups=asset_groups,
                                           scan_id=scan_id, email_id=email_id,
                                           report_title=report_title,
-                                          next_report_run=next_report_run,
+                                          report_run=report_run,
                                           output_pdf=output_pdf,
                                           output_csv=output_csv, active=active)
         self.db_session.add(entry)
+
+    # TODO: Update the next report run based on scan run time, report failure,
+    # etc.
 

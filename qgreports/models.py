@@ -32,7 +32,7 @@ class QGReport(Base):
     scan_id = Column(Integer, ForeignKey('qgscans.id'), nullable=False)
     email_id = Column(Integer, ForeignKey('qgemails.id'), nullable=False)
     report_title = Column(String, nullable=False)
-    next_report_run = Column(DateTime)
+    report_run = Column(DateTime)
     output_pdf = Column(Boolean, nullable=False)
     output_csv = Column(Boolean, nullable=False)
     active = Column(Boolean, default=True)
