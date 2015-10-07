@@ -1,25 +1,28 @@
-import qgreports.qualys_connector as qc
 import sys
 import smtplib
-import os
 import time
-import qgreports.settings
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
+
+import os
+
+import qgreports.qualys_connector as qc
+import qgreports.config.settings
+
 __author__ = "dmwoods38"
 
 # TODO: This whole thing needs to be fixed to pull configurations
 #       from the db.
 
-user = qgreports.settings.QualysAPI['username']
-password = qgreports.settings.QualysAPI['password']
-report_folder = qgreports.settings.report_folder
-archive_folder = qgreports.settings.archive_folder
-email_from = qgreports.settings.email_from
-smtp_server = qgreports.settings.smtp_server
+user = qgreports.config.settings.QualysAPI['username']
+password = qgreports.config.settings.QualysAPI['password']
+report_folder = qgreports.config.settings.report_folder
+archive_folder = qgreports.config.settings.archive_folder
+email_from = qgreports.config.settings.email_from
+smtp_server = qgreports.config.settings.smtp_server
 # TODO: This needs to be fixed to pull from the db.
-email_to = qgreports.settings.email_to
+email_to = qgreports.config.settings.email_to
 
 
 def build_email(file, subject):

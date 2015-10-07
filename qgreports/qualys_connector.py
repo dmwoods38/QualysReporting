@@ -1,8 +1,11 @@
-import requests
 import sys
 import xml.etree.ElementTree as ET
 import datetime
-import settings
+
+import requests
+
+from qgreports.config import settings
+
 __author__ = "dmwoods38"
 
 qualys_api_url = settings.QualysAPI['url']

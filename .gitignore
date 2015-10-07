@@ -2,4 +2,7 @@
 qgreports/*.pyc
 
 #ignore settings
-qgreports/settings.py
+qgreports/config/settings.py
+
+#ignore reports
+qgreports/config/reports.json

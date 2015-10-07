@@ -1,9 +1,11 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy import Sequence
-import settings
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
+
+from qgreports.config import settings
+
 __author__ = 'dmwoods38'
 
 Base = declarative_base()
@@ -12,7 +14,7 @@ Base = declarative_base()
 class QGScan(Base):
     __tablename__ = 'qgscans'
     id = Column(Integer, Sequence('qgscans_seq_id'), primary_key=True)
-    scan_title = Column(String, nullable=False)
+    scan_title = Column(String, nullable=False, unique=True)
     next_run = Column(DateTime)
 
 
