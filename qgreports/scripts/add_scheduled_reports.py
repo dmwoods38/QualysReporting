@@ -31,41 +31,44 @@ def main():
         scan_title = report['scan_title'].encode('utf8', 'ignore')
         scans_list.add(scan_title)
 
-    email_entries = []
+    email_entries = set()
     for list_name, email_list in distribution_lists.iteritems():
-        email_entries.append(QGEmail(email_list=email_list,
+        email_entries.add(QGEmail(email_list=email_list,
                                      list_name=list_name))
     session.add_all(email_entries)
     session.commit()
 
-    scan_entries = []
+    scan_entries = set()
     for scan in scans_list:
-        scan_entries.append(QGScan(scan_title=scan))
+        scan_entries.add(QGScan(scan_title=scan))
 
     session.add_all(scan_entries)
     session.commit()
 
-    # TODO: Then add report information.
     qgemails = session.query(QGEmail)
     qgscans = session.query(QGScan)
     for report in reports:
         asset_groups = report['asset_groups'].encode('utf8', 'ignore')
         scan_title = report['scan_title'].encode('utf8', 'ignore')
+        day_of_month = int(report['day_of_month'])
         result = qgscans.filter(QGScan.scan_title == scan_title)[:1]
         scan_id = result[0].id
         list_name = report['list_name'].encode('utf8', 'ignore')
         result = qgemails.filter(QGEmail.list_name == list_name)[:1]
         email_id = result[0].id
-        report_title = report['report_title'].encode('utf8', 'ignore')
-        output_pdf = bool(report['output_pdf'].encode('utf8', 'ignore'))
-        output_csv = bool(report['output_csv'].encode('utf8', 'ignore'))
+        email_subject = report['email_subject'].encode('utf8', 'ignore')
+        output_pdf = report['output_pdf'].encode('utf8', 'ignore').lower() == \
+                     'true'
+        output_csv = report['output_csv'].encode('utf8', 'ignore').lower() == \
+                     'true'
         session.add(QGReport(asset_groups=asset_groups, scan_id=scan_id,
-                             email_id=email_id, report_title=report_title,
-                             output_pdf=output_pdf, output_csv=output_csv))
+                             email_id=email_id, output_pdf=output_pdf,
+                             output_csv=output_csv, day_of_month=day_of_month,
+                             email_subject=email_subject))
     # At the very end commit the session.
     session.commit()
 
-     # cleanup of connections.
+    # cleanup of connections.
     session.close()
     engine.dispose()
 

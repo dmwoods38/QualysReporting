@@ -1,14 +1,17 @@
 import sys
 import smtplib
 import time
+import os
+import qgreports.qualys_connector as qc
+import qgreports.config.settings
+import qgreports.models
+import datetime
+from sqlalchemy.orm import sessionmaker
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
-
-import os
-
-import qgreports.qualys_connector as qc
-import qgreports.config.settings
+from qgreports.models import QGReport, QGEmail, QGScan
+from qgreports.objects import Scan, Email, Report
 
 __author__ = "dmwoods38"
 
@@ -67,65 +70,125 @@ def print_usage():
 
 # TODO: Fix to pull everything from DB.
 def main():
-    scans_with_files = {}
+    # Set up DB connection
+    engine = qgreports.models.db_init()
+    Session = sessionmaker(bind=engine)
+    db_session = Session()
+
+    # scans_with_files = {}
     if len(sys.argv) != 1:
         print_usage()
         sys.exit(2)
-    else:
-        try:
-            # TODO: Get the scans and file names from DB
-            with open(sys.argv[1], 'r') as f:
-                for line in f:
-                    k, v = tuple(line.strip('\n').split(','))
-                    scans_with_files.update({k: v})
-            # TODO: Get the emails from the DB
-            with open(sys.argv[2], 'r') as f:
-                global email_to
-                email_to = f.read().strip()
-                print "Email_to from file: " + email_to
-        except Exception as e:
-            print "Error reading scan names"
-            print e
-            sys.exit(2)
-    if len(scans_with_files):
-        session = qc.login(user, password)
-        try:
-            scans_with_refs = qc.get_scan_refs(scans_with_files.keys(), session)
 
-            refs_with_ids = qc.launch_scan_reports(scans_with_refs, session, formats=['pdf'])
-            # wait for scans to complete save API calls..
-            time.sleep(120)
-            report_status = qc.check_report_status(refs_with_ids, session)
-            print report_status
-            if len(''.join(status for statuses in report_status['Finished'].values()
-                                for status in statuses)):
-                qc.get_reports(report_status['Finished'], scans_with_refs['processed'], scans_with_files, session)
-            # if there are unfinished reports then continue to wait/check
-            while(len(''.join(status for statuses in report_status['Unfinished'].values()
-                                    for status in statuses))):
-                print "Waiting for unfinished reports..."
-                time.sleep(240)
-                print "Checking report status again..."
-                if debug:
-                    print report_status['Unfinished']
-                report_status = qc.check_report_status(report_status['Unfinished'], session)
-                if debug:
-                    print "report_status : " + report_status.__str__()
-                if len(''.join(status for statuses in report_status['Finished'].values()
-                                    for status in statuses)):
-                    qc.get_reports(report_status['Finished'],
-                                   scans_with_refs['processed'],
-                                   scans_with_files, session)
-            print "Trying to send emails..."
-            send_emails()
-        except Exception as e:
-            print e
-            sys.exit(2)
-        finally:
-            qc.logout(session)
-    else:
-        print "No scan names were found in" + str(sys.argv[1])
+    # Get today's reports
+    scheduled_reports = db_session.query(QGEmail,
+                                      QGScan,
+                                      QGReport).join(QGReport).join(QGScan)
+    scheduled_reports = scheduled_reports.filter(QGReport.day_of_month ==
+                                                 datetime.date.today().day)
+    if scheduled_reports.count() == 0:
+        if debug:
+            print "There were no scheduled reports on: " + \
+                  datetime.date.today().__str__()
+        db_session.close()
+        engine.dispose()
+        sys.exit()
+    report_list = []
+    # Parse the scheduled_reports into objects for easier manipulation.
+    for row in scheduled_reports:
+        report_result = row[2]
+        email = Email(recipients=row[0].email_list,
+                      subject=report_result.email_subject)
+        scan = Scan(scan_name=row[1].scan_title)
+        if report_result.output_csv:
+            report = Report(email=email, scan=scan, output='csv',
+                            asset_groups=report_result.asset_groups)
+            report_list.append(report)
+        if report_result.output_pdf:
+            report = Report(email=email, scan=scan, output='pdf',
+                            asset_groups=report_result.asset_groups)
+            report_list.append(report)
+
+    # else:
+        # try:
+        #     # TODO: Get the scans and file names from DB
+        #     with open(sys.argv[1], 'r') as f:
+        #         for line in f:
+        #             k, v = tuple(line.strip('\n').split(','))
+        #             scans_with_files.update({k: v})
+        #     # TODO: Get the emails from the DB
+        #     with open(sys.argv[2], 'r') as f:
+        #         global email_to
+        #         email_to = f.read().strip()
+        #         print "Email_to from file: " + email_to
+        # except Exception as e:
+        #     print "Error reading scan names"
+        #     print e
+        #     sys.exit(2)
+    session = qc.login(user, password)
+    try:
+        qc.get_scan_refs([x.scan for x in report_list], session)
+        qc.launch_scan_reports(report_list, session)
+
+        # wait for reports to complete save API calls..
+        time.sleep(120)
+        qc.check_report_status(report_list, session)
+        finished_reports = []
+        unfinished_reports = []
+        for report in report_list:
+            if report.report_status.lower() == 'finished':
+                finished_reports.append(report)
+            else:
+                unfinished_reports.append(report)
+
+        # TODO: Change get_reports method
+    except Exception as e:
+        print e
         sys.exit(2)
+    finally:
+        qc.logout(session)
+    # if len(scans_with_files):
+    #     session = qc.login(user, password)
+    #     try:
+    #         scans_with_refs = qc.get_scan_refs(scans_with_files.keys(), session)
+    #
+    #         refs_with_ids = qc.launch_scan_reports(scans_with_refs, session, formats=['pdf'])
+    #         # wait for scans to complete save API calls..
+    #         time.sleep(120)
+    #         report_status = qc.check_report_status(refs_with_ids, session)
+    #         print report_status
+    #         if len(''.join(status for statuses in report_status['Finished'].values()
+    #                             for status in statuses)):
+    #             qc.get_reports(report_status['Finished'], scans_with_refs['processed'], scans_with_files, session)
+    #         # if there are unfinished reports then continue to wait/check
+    #         while(len(''.join(status for statuses in report_status['Unfinished'].values()
+    #                                 for status in statuses))):
+    #             print "Waiting for unfinished reports..."
+    #             time.sleep(240)
+    #             print "Checking report status again..."
+    #             if debug:
+    #                 print report_status['Unfinished']
+    #             report_status = qc.check_report_status(report_status['Unfinished'], session)
+    #             if debug:
+    #                 print "report_status : " + report_status.__str__()
+    #             if len(''.join(status for statuses in report_status['Finished'].values()
+    #                                 for status in statuses)):
+    #                 qc.get_reports(report_status['Finished'],
+    #                                scans_with_refs['processed'],
+    #                                scans_with_files, session)
+    #         print "Trying to send emails..."
+    #         send_emails()
+    #     except Exception as e:
+    #         print e
+    #         sys.exit(2)
+    #     finally:
+    #         qc.logout(session)
+    # else:
+    #     print "No scan names were found in" + str(sys.argv[1])
+    #     sys.exit(2)
 
+    # Close out the db
+    db_session.close()
+    engine.dispose()
 if __name__ == "__main__":
     main()

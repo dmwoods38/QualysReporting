@@ -31,8 +31,10 @@ class QGReport(Base):
     asset_groups = Column(String)
     scan_id = Column(Integer, ForeignKey('qgscans.id'), nullable=False)
     email_id = Column(Integer, ForeignKey('qgemails.id'), nullable=False)
-    report_title = Column(String, nullable=False)
+    email_subject = Column(String, nullable=False)
+    # This is not used right now, in here for future use.
     report_run = Column(DateTime)
+    day_of_month = Column(Integer, nullable=False)
     output_pdf = Column(Boolean, nullable=False)
     output_csv = Column(Boolean, nullable=False)
     active = Column(Boolean, default=True)

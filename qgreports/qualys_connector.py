@@ -99,119 +99,129 @@ def get_scans(session, params=None):
         sys.exit(2)
 
 
-# Returns a dict of processed and unprocessed scans
-#     which is in turn a dict of scan title and scan references
-def get_scan_refs(scan_names, session, params=None, latest=True,
-                  scans_list=None):
+# Takes and updates scan objects.
+def get_scan_refs(scans, session, params=None, scans_list=None):
     if params is None:
         params = {}
     if scans_list is None:
         scans_list = get_scans(session, params)
     scan_xml = ET.fromstring(scans_list.encode('ascii', 'ignore'))
     scan_xpath = "./RESPONSE/SCAN_LIST/SCAN/"
-    scans_with_refs = {"processed": {}, "unprocessed": {}}
-    for scan in scan_names:
-        scan_refs_processed = []
-        scan_refs_unprocessed = []
-        if latest:
-            scan_list = [scan_xml.find(scan_xpath + "[TITLE='" + scan + "']")]
-        else:
-            scan_list = scan_xml.findall(scan_xpath + "[TITLE='" + scan + "']")
+    for scan in scans:
+        scan_name = scan.scan_name
+        scan_list = [scan_xml.find(scan_xpath + "[TITLE='" + scan_name + "']")]
+
         for node in scan_list:
-            if int(node.find("./PROCESSED").text):
-                scan_refs_processed.append(node.find("./REF").text)
+            if node is not None and int(node.find("./PROCESSED").text):
+                scan.scan_state = 'processed'
+                scan.scan_id = node.find("./REF").text
+            elif node is None:
+                scan.scan_state = 'noscan'
             else:
-                scan_refs_unprocessed.append(node.find("./REF").text)
+                scan.scan_state = 'unprocessed'
+                scan.scan_id = node.find("./REF").text
         if debug:
-            print "processed: " + str(scan_refs_processed)
-            print "unprocessed: " + str(scan_refs_unprocessed)
-        scans_with_refs['processed'].update({scan:scan_refs_processed})
-        scans_with_refs['unprocessed'].update({scan:scan_refs_unprocessed})
-    return scans_with_refs
+            print "Scan state: " + scan.scan_state
+            print "Scan name: " + scan_name
+
+
+# # Returns a dict of processed and unprocessed scans
+# #     which is in turn a dict of scan title and scan references
+# def get_scan_refs(scan_names, session, params=None, latest=True,
+#                   scans_list=None):
+#     if params is None:
+#         params = {}
+#     if scans_list is None:
+#         scans_list = get_scans(session, params)
+#     scan_xml = ET.fromstring(scans_list.encode('ascii', 'ignore'))
+#     scan_xpath = "./RESPONSE/SCAN_LIST/SCAN/"
+#     scans_with_refs = {"processed": {}, "unprocessed": {}}
+#     for scan in scan_names:
+#         scan_refs_processed = []
+#         scan_refs_unprocessed = []
+#         if latest:
+#             scan_list = [scan_xml.find(scan_xpath + "[TITLE='" + scan + "']")]
+#         else:
+#             scan_list = scan_xml.findall(scan_xpath + "[TITLE='" + scan + "']")
+#         for node in scan_list:
+#             if int(node.find("./PROCESSED").text):
+#                 scan_refs_processed.append(node.find("./REF").text)
+#             else:
+#                 scan_refs_unprocessed.append(node.find("./REF").text)
+#         if debug:
+#             print "processed: " + str(scan_refs_processed)
+#             print "unprocessed: " + str(scan_refs_unprocessed)
+#         scans_with_refs['processed'].update({scan:scan_refs_processed})
+#         scans_with_refs['unprocessed'].update({scan:scan_refs_unprocessed})
+#     return scans_with_refs
 
 # TODO: Change to return report objects.
 # Description: Launches scan reports and then returns the refs
 #              with the corresponding report ids
-def launch_scan_reports(scans_with_refs, session, formats=None, params=None):
-    if formats is None:
-        formats = ['csv']
+def launch_scan_reports(scheduled_reports, session, params=None):
     if params is None:
         params = {}
     params.update({"report_type": "Scan", "action": "launch"})
     params.update({"template_id":
                        qgreports.config.settings.QualysAPI['scan_template']})
     dest_url = "/api/2.0/fo/report/"
-    refs_with_ids = {}
     item_xpath = "./RESPONSE/ITEM_LIST/ITEM"
     max_num_xpath = "./RESPONSE/TEXT"
     max_report_string = "Max number of allowed reports"
-    processed = scans_with_refs['processed']
-    unprocessed = scans_with_refs['unprocessed']
-    for scan in processed:
-        for ref in processed[scan]:
-            params.update({"report_refs":ref})
-            ids = []
-            for output_format in formats:
-                params.update({"output_format": output_format})
-                # make request then parse xml for report id
-                response = request(params, session, dest_url)
-                report_xml = ET.fromstring(response.text.encode('ascii', 'ignore'))
-                while max_report_string in report_xml.find(max_num_xpath).text:
-                    if debug:
-                        print "Max reports running already. Waiting 2 min..."
-                    time.sleep(120)
-                    response = request(params, session, dest_url)
-                    report_xml = ET.fromstring(response.text.encode('ascii',
-                                                                    'ignore'))
-                items = report_xml.findall(item_xpath)
-                for item in items:
-                    if item.find("./KEY").text.upper() == "ID":
-                        ids.append(item.find("./VALUE").text)
-                        break
+
+    for report in scheduled_reports:
+        if report.scan.scan_state.lower() == 'processed':
+            params.update({"report_refs": report.scan.scan_id})
+            params.update({"output_format": report.output})
+
+            # make request then parse xml for report id
+            response = request(params, session, dest_url)
+            report_xml = ET.fromstring(response.text.encode('ascii', 'ignore'))
+            while max_report_string in report_xml.find(max_num_xpath).text:
                 if debug:
-                    print response.text
-            refs_with_ids.update({ref: ids})
+                    print "Max reports running already. Waiting 2 min..."
+                time.sleep(120)
+                response = request(params, session, dest_url)
+                report_xml = ET.fromstring(response.text.encode('ascii',
+                                                                'ignore'))
+            items = report_xml.findall(item_xpath)
+            for item in items:
+                if item.find("./KEY").text.upper() == "ID":
+                    report.report_id = item.find("./VALUE").text
+                    break
+            if debug:
+                print response.text
+        else:
+            with open(qgreports.config.settings.unprocessed_log, "a") as f:
+                f.write("Unprocessed for " + datetime.date.today().__str__())
+                f.write(report.email.subject)
 
-    if len(unprocessed):
-        with open("/root/unprocessed.log", "a") as f:
-            f.write("Unprocessed for " + datetime.date.today().__str__())
-            f.write(str(unprocessed))
-
-    return refs_with_ids
 
 # TODO: Change to take in report objects and return report objects.
 # Check that the report is finished before we try to download them.
-def check_report_status(refs_with_ids, session):
+def check_report_status(scheduled_reports, session):
     params = {"action": "list"}
     dest_url = "/api/2.0/fo/report/"
     report_list = request(params, session, dest_url)
     report_list_xml = ET.fromstring(report_list.text)
-
-    print "refs_with_ids : " + refs_with_ids.__str__()
-    refs_with_ids_by_status = {"Finished":{}, "Unfinished":{}}
-    # Report share limit text: Your Report Share user limit has been reached. This report will not be saved.
     # TODO add checking for report share limit and automatic deletion from the queue.
-    report_limit = "Your Report Share user limit has been reached. " \
-                   "This report will not be saved."
-    report_limit_xpath = "./RESPONSE/TEXT"
+    # report_limit = "Your Report Share user limit has been reached. " \
+    #                "This report will not be saved."
+    # report_limit_xpath = "./RESPONSE/TEXT"
 
     report_xpath = "./RESPONSE/REPORT_LIST/REPORT"
-    for ref, ids in refs_with_ids.iteritems():
-        refs_with_ids_by_status['Finished'].update({ref:[]})
-        refs_with_ids_by_status['Unfinished'].update({ref:[]})
-        for report in report_list_xml.findall(report_xpath):
-            for id in ids:
-                if report.find("./ID").text == id:
-                    state = report.find("./STATUS/STATE").text
-                    if state == "Finished":
-                        refs_with_ids_by_status['Finished'][ref].append(id)
-                    elif state == "Running" or state == "Submitted":
-                        refs_with_ids_by_status['Unfinished'][ref].append(id)
-                    else:
-                        print "The report won't complete"
-                        print "Report status: " + state
-                        sys.exit(2)
-    return refs_with_ids_by_status
+    for report in scheduled_reports:
+        for report_xml in report_list_xml.findall(report_xpath):
+            if report_xml.find("./ID").text == report.report_id:
+                state = report_xml.find("./STATUS/STATE").text
+                if state == "Finished":
+                    report.report_status = 'Finished'
+                elif state == "Running" or state == "Submitted":
+                    report.report_status = 'Unfinished'
+                else:
+                    print "The report won't complete"
+                    print "Report status: " + state
+                    sys.exit(2)
 
 
 # Download reports

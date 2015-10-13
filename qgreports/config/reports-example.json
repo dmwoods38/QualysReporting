@@ -1,6 +1,6 @@
 [
   {
-    "report_title":"title1",
+    "email_subject":"title1",
     "asset_groups":"assetgroup1",
     "output_pdf":"True",
     "output_csv":"True",
@@ -9,7 +9,7 @@
     "list_name":"test dl1"
   },
   {
-    "report_title":"title2",
+    "email_subject":"title2",
     "asset_groups":"assetgroup2, assetgroup3",
     "output_pdf":"True",
     "output_csv":"False",
@@ -18,7 +18,7 @@
     "list_name":"test dl2"
   },
   {
-    "report_title":"title3",
+    "email_subject":"title3",
     "asset_groups":"assetgroup2, assetgroup3",
     "output_pdf":"True",
     "output_csv":"False",
