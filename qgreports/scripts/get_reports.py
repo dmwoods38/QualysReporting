@@ -21,19 +21,20 @@ report_folder = qgreports.config.settings.report_folder
 archive_folder = qgreports.config.settings.archive_folder
 email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
-# TODO: This needs to be fixed to pull from the db.
+# TODO: Grab email_to from db.
 email_to = qgreports.config.settings.email_to
+debug = qgreports.config.settings.debug
 
 
-def build_email(file, subject):
-    filename = file.rsplit('/')[-1]
+def build_email(report, subject):
+    filename = report.rpartition('/')[-1]
 
     msg = MIMEMultipart()
     msg["From"] = email_from
     msg["To"] = email_to
     msg["Subject"] = subject
 
-    fp = open(file, "rb")
+    fp = open(report, "rb")
     attachment = MIMEBase("application", "octet-stream")
     attachment.set_payload(fp.read())
     fp.close()
@@ -44,31 +45,44 @@ def build_email(file, subject):
     return msg
 
 
-def send_jira_emails():
+def send_emails():
     server = smtplib.SMTP(smtp_server)
 
+    print "Email_to: " + email_to
+    # TODO: Change to take in report objects
     for report in os.listdir(report_folder):
-        base = report.rsplit('.')[0]
-        msg = build_email(report_folder + report, base)
-        server.sendmail(email_from, email_to, msg.as_string())
+        base = report.rpartition('.')[0]
+        msg = build_email(report_folder + report, email_pre + base +
+                          report.rpartition('.')[-1].upper())
+        server.sendmail(email_from, msg.get_all('To'), msg.as_string())
 
+    os.system("mv " + report_folder + "* " + archive_folder)
     server.quit()
 
 
+def print_usage():
+    print "Usage: "
+    print "      python get_reports.py"
+
+
+# TODO: Fix to pull everything from DB.
 def main():
     scans_with_files = {}
-    if len(user) == 0 or len(password) == 0:
-        print "Make sure you edit the file to include the user and pass"
-        sys.exit(2)
-    if len(sys.argv) < 2:
-        print "Please enter a file with the scan names"
+    if len(sys.argv) != 1:
+        print_usage()
         sys.exit(2)
     else:
         try:
+            # TODO: Get the scans and file names from DB
             with open(sys.argv[1], 'r') as f:
                 for line in f:
                     k, v = tuple(line.strip('\n').split(','))
                     scans_with_files.update({k: v})
+            # TODO: Get the emails from the DB
+            with open(sys.argv[2], 'r') as f:
+                global email_to
+                email_to = f.read().strip()
+                print "Email_to from file: " + email_to
         except Exception as e:
             print "Error reading scan names"
             print e
@@ -77,25 +91,33 @@ def main():
         session = qc.login(user, password)
         try:
             scans_with_refs = qc.get_scan_refs(scans_with_files.keys(), session)
-            refs_with_ids = qc.launch_scan_reports(scans_with_refs, session)
+
+            refs_with_ids = qc.launch_scan_reports(scans_with_refs, session, formats=['pdf'])
             # wait for scans to complete save API calls..
             time.sleep(120)
             report_status = qc.check_report_status(refs_with_ids, session)
             print report_status
-            qc.get_reports(report_status['Finished'],
-                           scans_with_refs['processed'],
-                           scans_with_files, session)
+            if len(''.join(status for statuses in report_status['Finished'].values()
+                                for status in statuses)):
+                qc.get_reports(report_status['Finished'], scans_with_refs['processed'], scans_with_files, session)
             # if there are unfinished reports then continue to wait/check
-            while len(''.join(report_status['Unfinished'].values())):
+            while(len(''.join(status for statuses in report_status['Unfinished'].values()
+                                    for status in statuses))):
                 print "Waiting for unfinished reports..."
                 time.sleep(240)
-                report_status = qc.check_report_status(
-                    report_status['Unfinished'], session)
-                qc.get_reports(report_status['Finished'],
-                               scans_with_refs['processed'],
-                               scans_with_files, session)
+                print "Checking report status again..."
+                if debug:
+                    print report_status['Unfinished']
+                report_status = qc.check_report_status(report_status['Unfinished'], session)
+                if debug:
+                    print "report_status : " + report_status.__str__()
+                if len(''.join(status for statuses in report_status['Finished'].values()
+                                    for status in statuses)):
+                    qc.get_reports(report_status['Finished'],
+                                   scans_with_refs['processed'],
+                                   scans_with_files, session)
             print "Trying to send emails..."
-            send_jira_emails()
+            send_emails()
         except Exception as e:
             print e
             sys.exit(2)

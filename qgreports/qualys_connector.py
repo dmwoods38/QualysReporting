@@ -1,18 +1,18 @@
+import requests
 import sys
 import xml.etree.ElementTree as ET
 import datetime
-
-import requests
-
-from qgreports.config import settings
+import time
+import subprocess
+import qgreports.config.settings
 
 __author__ = "dmwoods38"
-
-qualys_api_url = settings.QualysAPI['url']
+qualys_api_url = qgreports.config.settings.QualysAPI['url']
 xreq_header = {"X-Requested-With": "Python"}
 session_path = "/api/2.0/fo/session/"		
-debug = settings.debug
+debug = True 
 
+# TODO: Lots of small fixes
 
 # Params: Strings for username and password
 # Optional headers to include with login request
@@ -20,8 +20,8 @@ debug = settings.debug
 def login(username, password, headers=xreq_header, params=None):
     if params is None:
         params = {}
-    params.update({"action": "login", "username": username})
-    params.update({"password": password})
+    params.update({"action": "login", "username": username,
+                   "password": password})
     r = requests.Session()
     s = request(params, r, session_path, headers=headers, verb="post")
     if check_status(s):
@@ -66,25 +66,19 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
         print "Params: " + str(params)
     try:
         if verb.upper() == 'GET':
-            s = session.get(qualys_api_url+dest_url, params=params,
-                            headers=headers)
+            s = session.get(qualys_api_url+dest_url, params=params, headers=headers)
         elif verb.upper() == 'POST':
-            s = session.post(qualys_api_url+dest_url, params=params,
-                             headers=headers, data=data)
+            s = session.post(qualys_api_url+dest_url, params=params, headers=headers, data=data)
         else:
-            s = None
             print "Unsupported HTTP verb: " + verb
-            if not debug:
-                sys.exit(2)
+            sys.exit(2)
         if debug:
             print "status_code: " + str(s.status_code)
-            print s.text
     except Exception as e:
         print e
         print "Retrying..."
         try:
-            s = session.post(qualys_api_url+dest_url, params=params,
-                             headers=headers, data=data)
+            s = session.post(qualys_api_url+dest_url, params=params, headers=headers, data=data)
         except Exception as e:
             print e
             sys.exit(2)
@@ -120,7 +114,7 @@ def get_scan_refs(scan_names, session, params=None, latest=True,
         scan_refs_processed = []
         scan_refs_unprocessed = []
         if latest:
-            scan_list = [scan_xml.find(scan_xpath + "[TITLE='" +scan+"']")]
+            scan_list = [scan_xml.find(scan_xpath + "[TITLE='" + scan + "']")]
         else:
             scan_list = scan_xml.findall(scan_xpath + "[TITLE='" + scan + "']")
         for node in scan_list:
@@ -135,7 +129,7 @@ def get_scan_refs(scan_names, session, params=None, latest=True,
         scans_with_refs['unprocessed'].update({scan:scan_refs_unprocessed})
     return scans_with_refs
 
-
+# TODO: Change to return report objects.
 # Description: Launches scan reports and then returns the refs
 #              with the corresponding report ids
 def launch_scan_reports(scans_with_refs, session, formats=None, params=None):
@@ -144,22 +138,31 @@ def launch_scan_reports(scans_with_refs, session, formats=None, params=None):
     if params is None:
         params = {}
     params.update({"report_type": "Scan", "action": "launch"})
-    params.update({"template_id": settings.QualysAPI['scan_template']})
+    params.update({"template_id":
+                       qgreports.config.settings.QualysAPI['scan_template']})
     dest_url = "/api/2.0/fo/report/"
     refs_with_ids = {}
     item_xpath = "./RESPONSE/ITEM_LIST/ITEM"
+    max_num_xpath = "./RESPONSE/TEXT"
+    max_report_string = "Max number of allowed reports"
     processed = scans_with_refs['processed']
     unprocessed = scans_with_refs['unprocessed']
     for scan in processed:
         for ref in processed[scan]:
-            params.update({"report_refs": ref})
+            params.update({"report_refs":ref})
             ids = []
-            for format in formats:
-                params.update({"output_format": format})
+            for output_format in formats:
+                params.update({"output_format": output_format})
                 # make request then parse xml for report id
                 response = request(params, session, dest_url)
-                report_xml = ET.fromstring(
-                    response.text.encode('ascii', 'ignore'))
+                report_xml = ET.fromstring(response.text.encode('ascii', 'ignore'))
+                while max_report_string in report_xml.find(max_num_xpath).text:
+                    if debug:
+                        print "Max reports running already. Waiting 2 min..."
+                    time.sleep(120)
+                    response = request(params, session, dest_url)
+                    report_xml = ET.fromstring(response.text.encode('ascii',
+                                                                    'ignore'))
                 items = report_xml.findall(item_xpath)
                 for item in items:
                     if item.find("./KEY").text.upper() == "ID":
@@ -176,7 +179,7 @@ def launch_scan_reports(scans_with_refs, session, formats=None, params=None):
 
     return refs_with_ids
 
-
+# TODO: Change to take in report objects and return report objects.
 # Check that the report is finished before we try to download them.
 def check_report_status(refs_with_ids, session):
     params = {"action": "list"}
@@ -184,17 +187,26 @@ def check_report_status(refs_with_ids, session):
     report_list = request(params, session, dest_url)
     report_list_xml = ET.fromstring(report_list.text)
 
+    print "refs_with_ids : " + refs_with_ids.__str__()
     refs_with_ids_by_status = {"Finished":{}, "Unfinished":{}}
+    # Report share limit text: Your Report Share user limit has been reached. This report will not be saved.
+    # TODO add checking for report share limit and automatic deletion from the queue.
+    report_limit = "Your Report Share user limit has been reached. " \
+                   "This report will not be saved."
+    report_limit_xpath = "./RESPONSE/TEXT"
+
     report_xpath = "./RESPONSE/REPORT_LIST/REPORT"
     for ref, ids in refs_with_ids.iteritems():
+        refs_with_ids_by_status['Finished'].update({ref:[]})
+        refs_with_ids_by_status['Unfinished'].update({ref:[]})
         for report in report_list_xml.findall(report_xpath):
             for id in ids:
                 if report.find("./ID").text == id:
                     state = report.find("./STATUS/STATE").text
                     if state == "Finished":
-                        refs_with_ids_by_status['Finished'].update({ref: id})
+                        refs_with_ids_by_status['Finished'][ref].append(id)
                     elif state == "Running" or state == "Submitted":
-                        refs_with_ids_by_status['Unfinished'].update({ref: id})
+                        refs_with_ids_by_status['Unfinished'][ref].append(id)
                     else:
                         print "The report won't complete"
                         print "Report status: " + state
@@ -209,45 +221,55 @@ def get_reports(refs_with_ids, scans_with_refs, snames_with_rnames, session):
     dest_url = "/api/2.0/fo/report/"
     today = datetime.date.today().__str__()
     report_path = "/root/reports/"
-    report_prefix = "International - "
-    report_suffix = " - CSV " + today
+    report_prefix = ""
+    report_suffix = " " + today
     print "Trying to get reports..."
     print "refs_with_ids : " + refs_with_ids.__str__()
     print "scans_with_refs : " + scans_with_refs.__str__()
     print "snames_with_rnames : " + snames_with_rnames.__str__()
-    for scan_ref, report_id in refs_with_ids.iteritems():
-        for scan_name, refs in scans_with_refs.iteritems():
-            if scan_ref in refs:
-                params.update({"id": report_id})
-                report_name = snames_with_rnames[scan_name]
-                if not len(report_name):
-                    report_name = scan_name
-                report_name = report_prefix + report_name
-                report_name += report_suffix + ".csv"
-                with open(report_path + report_name, "ab") as f:
-                    response = request(params, session, dest_url)
-                    check_status(response)
-                    f.write(response.content)
+    for scan_ref,report_ids in refs_with_ids.iteritems():
+        for report_id in report_ids:
+            for scan_name,refs in scans_with_refs.iteritems():
+                if scan_ref in refs:
+                    params.update({"id":report_id})
+                    report_name = snames_with_rnames[scan_name]
+                    if not len(report_name):
+                        report_name = scan_name
+                    report_name = report_prefix + report_name + report_suffix
+                    with open(report_path + report_name, "ab") as f:
+                        response = request(params, session, dest_url)
+                        check_status(response)
+                        f.write(response.content)
+                    # check filetype and rename with appropriate extension
+                    command = "file " + report_path.replace(" ", "\ ") + report_name.replace(" ", "\ ")
+                    command += " | cut -d':' -f2"
+                    filetype = subprocess.check_output(command, shell=True)
+                    filetype = filetype.strip()
+
+                    fullname = report_path.replace(" ", "\ ") + \
+                               report_name.replace(" ", "\ ") + filetype
+
+                    command = "mv " + report_path.replace(" ", "\ ")
+                    command = command + report_name.replace(" ", "\ ") + \
+                              " " + fullname
+                    subprocess.call(command, shell=True)
 
 
+# Returns API scan results, not the same as a scan report. Much less detail.
 def get_scan_results(scans_with_refs, session, scans_with_files,
                             folder="/root/reports/",
-                            format="csv",latest=True, params=None):
-    if params is None:
-        params = {}
-    params.update({"action": "fetch", "mode": "brief",
-                   "output_format": format})
+                            format="csv", params={}):
+    params.update({"action":"fetch","mode":"brief", "output_format":format})
     dest_url = "/api/2.0/fo/scan/"
     processed = scans_with_refs['processed']
     unprocessed = scans_with_refs['unprocessed']
     for scan in processed:
         for ref in processed[scan]:
-            params.update({"scan_ref": ref})
+            params.update({"scan_ref":ref})
             response = request(params, session, dest_url)
             file = scans_with_files[scan] if scans_with_files[scan] else scan
             filename = folder + file
-            filename = filename + "_" + datetime.date.today().__str__()
-            filename += "." + format
+            filename = filename +"_"+datetime.date.today().__str__() + "." + format
             with open(filename, "a") as f:
                 f.write(response.text)
 
@@ -255,3 +277,5 @@ def get_scan_results(scans_with_refs, session, scans_with_files,
         with open("/root/unprocessed.log", "a") as f:
             f.write("Unprocessed for " + datetime.date.today().__str__())
             f.write(str(unprocessed))
+
+#def get_hosts_list(session, ag_names=

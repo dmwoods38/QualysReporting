@@ -6,3 +6,6 @@ qgreports/config/settings.py
 
 #ignore reports
 qgreports/config/reports.json
+
+#ignore legacy stuff
+/qgreports/scripts/old_code
