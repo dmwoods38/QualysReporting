@@ -167,7 +167,7 @@ def main():
         print str(err)
         print_usage()
         sys.exit(2)
-    if len(opts) < 1:
+    if __name__ == "__main__" and len(opts) < 1:
         s = "Sorry :/ this script doesn't do anything useful right now"
         s += " if you don't specify an outfile with -o"
         print s

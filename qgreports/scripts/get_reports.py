@@ -15,9 +15,6 @@ from qgreports.objects import Scan, Email, Report
 
 __author__ = "dmwoods38"
 
-# TODO: This whole thing needs to be fixed to pull configurations
-#       from the db.
-
 user = qgreports.config.settings.QualysAPI['username']
 password = qgreports.config.settings.QualysAPI['password']
 report_folder = qgreports.config.settings.report_folder
@@ -57,7 +54,7 @@ def send_emails(reports):
 
     server.quit()
 
-# TODO: Fix to pull everything from DB.
+
 def main():
     # Set up DB connection
     engine = qgreports.models.db_init()
@@ -96,6 +93,7 @@ def main():
     session = qc.login(user, password)
     try:
         qc.get_scan_refs([x.scan for x in report_list], session)
+        qc.get_asset_group_ips(report_list, session)
         qc.launch_scan_reports(report_list, session)
 
         # wait for reports to complete save API calls..
@@ -105,6 +103,9 @@ def main():
         qc.check_report_status(report_list, session)
         unfinished_reports = []
         for report in report_list:
+            if report.report_status is None:
+                report_list.remove(report)
+                continue
             if report.report_status.lower() != 'finished':
                 unfinished_reports.append(report)
 

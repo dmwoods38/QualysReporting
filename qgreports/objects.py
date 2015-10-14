@@ -21,7 +21,7 @@ class Email:
 class Report:
     def __init__(self, report_id=None, report_status=None,
                  email=None, scan=None, filename=None, output=None,
-                 asset_groups=None):
+                 asset_groups=None, asset_ips=None):
         self.report_id = report_id
         self.report_status = report_status
         self.email = email
@@ -29,6 +29,7 @@ class Report:
         self.report_filename = filename
         self.output = output
         self.asset_groups = asset_groups
+        self.asset_ips = asset_ips
 
 
 

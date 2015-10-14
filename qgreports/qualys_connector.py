@@ -12,7 +12,6 @@ xreq_header = {"X-Requested-With": "Python"}
 session_path = "/api/2.0/fo/session/"		
 debug = True 
 
-# TODO: Lots of small fixes
 
 # Params: Strings for username and password
 # Optional headers to include with login request
@@ -105,7 +104,7 @@ def get_scan_refs(scans, session, params=None, scans_list=None):
         params = {}
     if scans_list is None:
         scans_list = get_scans(session, params)
-    scan_xml = ET.fromstring(scans_list.encode('ascii', 'ignore'))
+    scan_xml = ET.fromstring(scans_list.encode('utf8', 'ignore'))
     scan_xpath = "./RESPONSE/SCAN_LIST/SCAN/"
     for scan in scans:
         scan_name = scan.scan_name
@@ -125,37 +124,38 @@ def get_scan_refs(scans, session, params=None, scans_list=None):
             print "Scan name: " + scan_name
 
 
-# # Returns a dict of processed and unprocessed scans
-# #     which is in turn a dict of scan title and scan references
-# def get_scan_refs(scan_names, session, params=None, latest=True,
-#                   scans_list=None):
-#     if params is None:
-#         params = {}
-#     if scans_list is None:
-#         scans_list = get_scans(session, params)
-#     scan_xml = ET.fromstring(scans_list.encode('ascii', 'ignore'))
-#     scan_xpath = "./RESPONSE/SCAN_LIST/SCAN/"
-#     scans_with_refs = {"processed": {}, "unprocessed": {}}
-#     for scan in scan_names:
-#         scan_refs_processed = []
-#         scan_refs_unprocessed = []
-#         if latest:
-#             scan_list = [scan_xml.find(scan_xpath + "[TITLE='" + scan + "']")]
-#         else:
-#             scan_list = scan_xml.findall(scan_xpath + "[TITLE='" + scan + "']")
-#         for node in scan_list:
-#             if int(node.find("./PROCESSED").text):
-#                 scan_refs_processed.append(node.find("./REF").text)
-#             else:
-#                 scan_refs_unprocessed.append(node.find("./REF").text)
-#         if debug:
-#             print "processed: " + str(scan_refs_processed)
-#             print "unprocessed: " + str(scan_refs_unprocessed)
-#         scans_with_refs['processed'].update({scan:scan_refs_processed})
-#         scans_with_refs['unprocessed'].update({scan:scan_refs_unprocessed})
-#     return scans_with_refs
+def get_asset_group_ips(scheduled_reports, session, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "list"})
+    dest_url = "/api/2.0/fo/asset/group/"
+    asset_group_xpath = "./RESPONSE/ASSET_GROUP_LIST/ASSET_GROUP"
+    ips_xpath = "./IP_SET"
 
-# TODO: Change to return report objects.
+    response = request(params, session, dest_url)
+    asset_group_list_xml = ET.fromstring(
+        response.text.encode('utf8', 'ignore'))
+
+    # Go through the asset groups and find the IPs
+    for report in scheduled_reports:
+        asset_groups = report.asset_groups.split(',')
+        for asset_group in asset_groups:
+            for asset_group_xml in \
+                    asset_group_list_xml.findall(asset_group_xpath):
+                # check
+                if asset_group_xml.find("./TITLE").text == asset_group:
+                    ip_set_xml = asset_group_xml.find(ips_xpath)
+                    if report.asset_ips == '':
+                        report.asset_ips += ','
+                    if report.asset_ips is None:
+                        report.asset_ips = ''
+                    print "here"
+                    ips = [i.text for i in ip_set_xml.getchildren()]
+                    report.asset_ips += ','.join(ips)
+        if report.asset_ips == '' or report.asset_ips is None:
+            print "No ips found for: " + report.asset_groups
+
+
 # Description: Launches scan reports and then returns the refs
 #              with the corresponding report ids
 def launch_scan_reports(scheduled_reports, session, params=None):
@@ -171,18 +171,20 @@ def launch_scan_reports(scheduled_reports, session, params=None):
 
     for report in scheduled_reports:
         if report.scan.scan_state.lower() == 'processed':
+            if report.asset_ips is not None:
+                params.update({"ip_restriction": report.asset_ips})
             params.update({"report_refs": report.scan.scan_id})
             params.update({"output_format": report.output})
 
             # make request then parse xml for report id
             response = request(params, session, dest_url)
-            report_xml = ET.fromstring(response.text.encode('ascii', 'ignore'))
+            report_xml = ET.fromstring(response.text.encode('utf8', 'ignore'))
             while max_report_string in report_xml.find(max_num_xpath).text:
                 if debug:
                     print "Max reports running already. Waiting 2 min..."
                 time.sleep(120)
                 response = request(params, session, dest_url)
-                report_xml = ET.fromstring(response.text.encode('ascii',
+                report_xml = ET.fromstring(response.text.encode('utf8',
                                                                 'ignore'))
             items = report_xml.findall(item_xpath)
             for item in items:
@@ -197,7 +199,6 @@ def launch_scan_reports(scheduled_reports, session, params=None):
                 f.write(report.email.subject)
 
 
-# TODO: Change to take in report objects and return report objects.
 # Check that the report is finished before we try to download them.
 def check_report_status(scheduled_reports, session):
     params = {"action": "list"}
@@ -225,7 +226,6 @@ def check_report_status(scheduled_reports, session):
 
 
 # Download reports
-# TODO: Create objects that store scan ref(s), report id(s), and report names
 def get_reports(scheduled_reports, session):
     params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
@@ -234,6 +234,8 @@ def get_reports(scheduled_reports, session):
     report_suffix = " " + today
     print "Trying to get reports..."
     for report in scheduled_reports:
+        if report.report_id is None:
+            continue
         params.update({"id": report.report_id})
         report_name = report.email.subject
         report_name += report_suffix
