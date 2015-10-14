@@ -226,43 +226,42 @@ def check_report_status(scheduled_reports, session):
 
 # Download reports
 # TODO: Create objects that store scan ref(s), report id(s), and report names
-def get_reports(refs_with_ids, scans_with_refs, snames_with_rnames, session):
+def get_reports(scheduled_reports, session):
     params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
     today = datetime.date.today().__str__()
-    report_path = "/root/reports/"
-    report_prefix = ""
+    report_path = qgreports.config.settings.report_folder
     report_suffix = " " + today
     print "Trying to get reports..."
-    print "refs_with_ids : " + refs_with_ids.__str__()
-    print "scans_with_refs : " + scans_with_refs.__str__()
-    print "snames_with_rnames : " + snames_with_rnames.__str__()
-    for scan_ref,report_ids in refs_with_ids.iteritems():
-        for report_id in report_ids:
-            for scan_name,refs in scans_with_refs.iteritems():
-                if scan_ref in refs:
-                    params.update({"id":report_id})
-                    report_name = snames_with_rnames[scan_name]
-                    if not len(report_name):
-                        report_name = scan_name
-                    report_name = report_prefix + report_name + report_suffix
-                    with open(report_path + report_name, "ab") as f:
-                        response = request(params, session, dest_url)
-                        check_status(response)
-                        f.write(response.content)
-                    # check filetype and rename with appropriate extension
-                    command = "file " + report_path.replace(" ", "\ ") + report_name.replace(" ", "\ ")
-                    command += " | cut -d':' -f2"
-                    filetype = subprocess.check_output(command, shell=True)
-                    filetype = filetype.strip()
+    for report in scheduled_reports:
+        params.update({"id": report.report_id})
+        report_name = report.email.subject
+        report_name += report_suffix
 
-                    fullname = report_path.replace(" ", "\ ") + \
-                               report_name.replace(" ", "\ ") + filetype
+        with open(report_path + report_name, "ab") as f:
+            response = request(params, session, dest_url)
+            check_status(response)
+            f.write(response.content)
 
-                    command = "mv " + report_path.replace(" ", "\ ")
-                    command = command + report_name.replace(" ", "\ ") + \
-                              " " + fullname
-                    subprocess.call(command, shell=True)
+        # check filetype and rename with appropriate extension
+        command = "file " + report_path.replace(" ", "\ ") + report_name.replace(" ", "\ ")
+        command += " | cut -d':' -f2"
+        filetype = subprocess.check_output(command, shell=True)
+        if 'PDF' in filetype.upper():
+            filetype = '.pdf'
+        elif 'CSV' in filetype.upper():
+            filetype = '.csv'
+        else:
+            print "Unknown filetype: " + filetype()
+
+        fullname = report_path.replace(" ", "\ ") + \
+                   report_name.replace(" ", "\ ") + filetype
+
+        command = "mv " + report_path.replace(" ", "\ ")
+        command = command + report_name.replace(" ", "\ ") + \
+                  " " + fullname
+        subprocess.call(command, shell=True)
+        report.report_filename = fullname
 
 
 # Returns API scan results, not the same as a scan report. Much less detail.

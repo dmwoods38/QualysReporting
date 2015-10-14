@@ -22,6 +22,11 @@ QualysAPI = {
 # where reports are temporarily stored before being emailed.
 report_folder = ''
 
+# report archive folder after reports are emailed.
+archive_folder = ''
+
+# log file for any unprocessed reports. sorry it looks terrible atm.
+unprocessed_log = ''
 # sender
 email_from = ''
 

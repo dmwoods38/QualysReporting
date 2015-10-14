@@ -6,7 +6,8 @@
     "output_csv":"True",
     "scan_title":"scan1",
     "email_list":"test@test.com",
-    "list_name":"test dl1"
+    "list_name":"Test DL1",
+    "day_of_month":"13"
   },
   {
     "email_subject":"title2",
@@ -15,7 +16,8 @@
     "output_csv":"False",
     "scan_title":"scan2",
     "email_list":"test@test.com, myuser@mydomain.com",
-    "list_name":"test dl2"
+    "list_name":"Test DL2",
+    "day_of_month":"13"
   },
   {
     "email_subject":"title3",
@@ -24,6 +26,7 @@
     "output_csv":"False",
     "scan_title":"scan2",
     "email_list":"test@test.com, myuser@mydomain.com",
-    "list_name":"test dl2"
+    "list_name":"Test DL2",
+    "day_of_month":"13"
   }
 ]
