@@ -46,6 +46,7 @@ def build_email(report, subject, recipients):
 
 def send_emails(reports):
     server = smtplib.SMTP(smtp_server)
+    print "Sending emails..."
 
     for report in reports:
         msg = build_email(report.report_filename.replace("\\", ""),
