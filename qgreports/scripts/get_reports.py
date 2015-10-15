@@ -125,6 +125,9 @@ def main():
 
         qc.get_reports(report_list, session)
 
+        for report in report_list:
+            if report.report_id is None:
+                report_list.remove(report)
         # Change send emails
         send_emails(report_list)
     except Exception as e:
