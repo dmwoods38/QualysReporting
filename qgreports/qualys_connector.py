@@ -59,6 +59,8 @@ def check_status(response):
 # Params
 def request(params, session, dest_url, verb='POST', headers=xreq_header,
                 data=""):
+    # sleep for rate limiting
+    time.sleep(1)
     if debug:
         print "HTTP Verb" + verb
         print "URL: " + qualys_api_url+dest_url
@@ -149,7 +151,6 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
                         report.asset_ips += ','
                     if report.asset_ips is None:
                         report.asset_ips = ''
-                    print "here"
                     ips = [i.text for i in ip_set_xml.getchildren()]
                     report.asset_ips += ','.join(ips)
         if report.asset_ips == '' or report.asset_ips is None:

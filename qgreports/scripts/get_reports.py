@@ -113,7 +113,7 @@ def main():
 
         while len(unfinished_reports):
             print "Waiting for unfinished reports..."
-            time.sleep(240)
+            time.sleep(180)
             print "Checking report status again..."
             qc.check_report_status(unfinished_reports, session)
             for report in unfinished_reports:
