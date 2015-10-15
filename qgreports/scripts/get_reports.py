@@ -7,6 +7,7 @@ import qgreports.config.settings
 import qgreports.models
 import datetime
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import or_
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
@@ -65,8 +66,9 @@ def main():
     scheduled_reports = db_session.query(QGEmail,
                                       QGScan,
                                       QGReport).join(QGReport).join(QGScan)
-    scheduled_reports = scheduled_reports.filter(QGReport.day_of_month ==
-                                                 datetime.date.today().day)
+    scheduled_reports = scheduled_reports.filter(
+        or_(QGReport.day_of_month == datetime.date.today().day,
+            QGReport.day_of_week == datetime.date.today().weekday()))
     if scheduled_reports.count() == 0:
         if debug:
             print "There were no scheduled reports on: " + \

@@ -4,6 +4,8 @@ Tool to help with automation of Qualysguard scan report download and delivery.
 Disclaimer: This is not associated with Qualys in any way, this is just the
 skeleton of something I have created that fits my needs.
 
+Apologies for the poor packaging and coding. I will be improving both in the future.
+
 # Versions
 ## v 0.2.0
 Stuff actually works now. Setup instructions and dockerfile/containers to come.
@@ -27,3 +29,9 @@ easier to setup I can definitely provide instructions.
 
 ## Other requirements
 * Some sort of database (only tested on postgresql for now).
+* libpq-dev for psycopg2
+* python-dev for psycopg2
+* python-dev for psycopg2
+* pip to install python packages
+
+

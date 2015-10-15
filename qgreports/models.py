@@ -34,7 +34,8 @@ class QGReport(Base):
     email_subject = Column(String, nullable=False)
     # This is not used right now, in here for future use.
     report_run = Column(DateTime)
-    day_of_month = Column(Integer, nullable=False)
+    day_of_month = Column(Integer)
+    day_of_week = Column(Integer)
     output_pdf = Column(Boolean, nullable=False)
     output_csv = Column(Boolean, nullable=False)
     active = Column(Boolean, default=True)

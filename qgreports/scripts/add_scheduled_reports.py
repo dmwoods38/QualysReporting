@@ -50,7 +50,14 @@ def main():
     for report in reports:
         asset_groups = report['asset_groups'].encode('utf8', 'ignore')
         scan_title = report['scan_title'].encode('utf8', 'ignore')
-        day_of_month = int(report['day_of_month'])
+        if 'day_of_month' in report:
+            day_of_month = int(report['day_of_month'])
+        else:
+            day_of_month = None
+        if 'day_of_week' in report:
+            day_of_week = int(report['day_of_week'])
+        else:
+            day_of_week = None
         result = qgscans.filter(QGScan.scan_title == scan_title)[:1]
         scan_id = result[0].id
         list_name = report['list_name'].encode('utf8', 'ignore')
@@ -64,6 +71,7 @@ def main():
         session.add(QGReport(asset_groups=asset_groups, scan_id=scan_id,
                              email_id=email_id, output_pdf=output_pdf,
                              output_csv=output_csv, day_of_month=day_of_month,
+                             day_of_week=day_of_week,
                              email_subject=email_subject))
     # At the very end commit the session.
     session.commit()
@@ -71,7 +79,6 @@ def main():
     # cleanup of connections.
     session.close()
     engine.dispose()
-
 
 
 if __name__ == '__main__':

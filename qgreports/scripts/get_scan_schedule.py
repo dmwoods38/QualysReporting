@@ -33,7 +33,8 @@ def qualys_login():
 def qualys_api_request(params, auth, dest_url="/api/2.0/fo/schedule/scan"): 
     h = {"X-Requested-With": "Python"}
     print "Making API call..."
-    r = requests.get(qualys_api_url+dest_url, auth=auth, params=params,headers=h)
+    r = requests.get(qualys_api_url+dest_url, auth=auth, params=params,
+                     headers=h)
     if r.status_code == 401:
         print "There was an error logging you in, check your password?"
         sys.exit(2)
@@ -42,10 +43,9 @@ def qualys_api_request(params, auth, dest_url="/api/2.0/fo/schedule/scan"):
         sys.exit(2)
     print "Call made to " + r.url
     return r
-    #return ET.fromstring(r.content)
 
 
-#Translates integer days 0-6 to human-friendly days
+# Translates integer days 0-6 to human-friendly days
 def int_day_to_str(day):
     if day == '0':
         return 'Sunday'
@@ -77,7 +77,7 @@ def build_freq_str(sched):
     elif freq.tag == 'MONTHLY':
         monthly_freq = freq.attrib.get('frequency_months')
         s = "Every " + monthly_freq + " month(s) on "
-        if freq.attrib.get('day_of_week') != None:
+        if freq.attrib.get('day_of_week') is not None:
             day_of_week = int_day_to_str(freq.attrib.get('day_of_week'))
             week_of_month = freq.attrib.get('week_of_month')
             s = s + day_of_week + " of week " + week_of_month
@@ -97,12 +97,6 @@ def build_freq_str(sched):
     else:
         print freq.tag
         raise ValueError("Schedule did not have a recognized Frequency")
-
-
-# Params: Takes in some sort of schedule object list
-#         Need to determine what this will look like
-def schedule_change_control(schedules):
-    print "hello3"
 
 
 # Params: Takes in the XML for the schedule
@@ -126,7 +120,7 @@ def parse_schedule(schedule_xml):
         minute = sched.find("./START_MINUTE").text
         time = time + minute if len(minute) == 2 else time + '0' + minute
         timezone = sched.find("./TIME_ZONE").find("./TIME_ZONE_DETAILS").text
-        schedule = {"Title" : title, "Targets": target}
+        schedule = {"Title": title, "Targets": target}
         schedule.update({"Address Groups": ", ".join(ags), "Frequency": freq_str})
         schedule.update({"Time": time, "Timezone": timezone})
         schedules.append(schedule)
@@ -138,15 +132,15 @@ def parse_schedule(schedule_xml):
 #        dict[] schedules - schedule info
 #        str[] columns - column titles to use 
 #        str sep - separator to use for CSV
-#					Note: this won't work properly with ',' as a separator atm
-def write_csv(file, schedules, columns=None, sep=';'):
+# 		 Note: this won't work properly with ',' as a separator atm
+def write_csv(filename, schedules, columns=None, sep=';'):
     try:
-        f = open(file, 'w')
+        f = open(filename, 'w')
     except Exception:
         print "Could not open file"
         sys.exit(2)
     buf = "sep=" + sep + "\n"
-    if columns != None:
+    if columns is not None:
         buf = buf + sep.join(columns) + "\n"
     for schedule in schedules:
         buf = buf + schedule.get('Title') + sep
@@ -156,7 +150,7 @@ def write_csv(file, schedules, columns=None, sep=';'):
         buf = buf + schedule.get('Time') + sep
         buf = buf + schedule.get('Timezone') + sep
         buf += "\n"
-    f.write(buf.encode('ascii','ignore'))
+    f.write(buf.encode('ascii', 'ignore'))
     f.close()
 
 
@@ -185,12 +179,12 @@ def main():
     user = raw_input("Qualys username: ")
     pw = getpass.getpass()
 
-    query_params = {"action":"list", "active":"1"}
+    query_params = {"action": "list", "active": "1"}
     tree = ET.fromstring(qualys_api_request(query_params, (user,pw)).content)
     schedules = parse_schedule(tree)
     if outfile is not None:
-        cols = ['Scan Name', 'Address Groups', 'IPs', 'Frequency', 'Time']
-        cols.append('Timezone')
+        cols = ['Scan Name', 'Address Groups', 'IPs', 'Frequency', 'Time',
+                'Timezone']
         write_csv(outfile, schedules, columns=cols)
 
 if __name__ == "__main__":

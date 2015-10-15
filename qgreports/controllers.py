@@ -28,14 +28,16 @@ class QGReportController:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def add_report(self, asset_groups, scan_id, email_id, day_of_month,
-                   email_subject, report_run=None, output_pdf=None,
-                   output_csv=None, active=True):
+    def add_report(self, asset_groups, scan_id, email_id, email_subject,
+                   day_of_month=None, day_of_week=None,
+                   report_run=None, output_pdf=None, output_csv=None,
+                   active=True):
         entry = qgreports.models.QGReport(asset_groups=asset_groups,
                                           scan_id=scan_id, email_id=email_id,
                                           email_subject=email_subject,
                                           report_run=report_run,
                                           day_of_month=day_of_month,
+                                          day_of_week=day_of_week,
                                           output_pdf=output_pdf,
                                           output_csv=output_csv, active=active)
         self.db_session.add(entry)

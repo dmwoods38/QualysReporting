@@ -29,4 +29,14 @@
     "list_name":"Test DL2",
     "day_of_month":"13"
   }
+  {
+    "email_subject":"title4",
+    "asset_groups":"assetgroup4",
+    "output_pdf":"True",
+    "output_csv":"False",
+    "scan_title":"scan2",
+    "email_list":"test@test.com, myuser@mydomain.com",
+    "list_name":"Test DL2",
+    "day_of_week":"0"
+  }
 ]
