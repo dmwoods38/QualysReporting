@@ -49,6 +49,8 @@ def send_emails(reports):
     print "Sending emails..."
 
     for report in reports:
+        if debug:
+            print "Report: " + report.email.subject
         msg = build_email(report.report_filename.replace("\\", ""),
                           report.email.subject, report.email.recipients)
         server.sendmail(email_from, msg.get_all('To'), msg.as_string())
