@@ -47,7 +47,7 @@ def build_email(report, subject, recipients):
 def send_emails(reports):
     server = smtplib.SMTP(smtp_server)
     print "Sending emails..."
-
+    global debug
     for report in reports:
         if debug:
             print "Report: " + report.email.subject
