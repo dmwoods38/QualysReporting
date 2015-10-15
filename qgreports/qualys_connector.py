@@ -60,7 +60,7 @@ def check_status(response):
 def request(params, session, dest_url, verb='POST', headers=xreq_header,
                 data=""):
     # sleep for rate limiting
-    time.sleep(1)
+    time.sleep(3)
     if debug:
         print "HTTP Verb" + verb
         print "URL: " + qualys_api_url+dest_url
@@ -250,7 +250,7 @@ def get_reports(scheduled_reports, session):
         # command = "file " + report_path.replace(" ", "\ ") + report_name.replace(" ", "\ ")
         # command += " | cut -d':' -f2"
         # filetype = subprocess.check_output(command, shell=True)
-        # # if 'PDF' in filetype.upper():
+        # if 'PDF' in filetype.upper():
         #     filetype = '.pdf'
         # elif 'CSV' in filetype.upper():
         #     filetype = '.csv'
