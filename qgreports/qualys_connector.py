@@ -147,7 +147,7 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
                 # check
                 if asset_group_xml.find("./TITLE").text == asset_group:
                     ip_set_xml = asset_group_xml.find(ips_xpath)
-                    if report.asset_ips == '':
+                    if report.asset_ips != '' and report.asset_ips is not None:
                         report.asset_ips += ','
                     if report.asset_ips is None:
                         report.asset_ips = ''
@@ -255,7 +255,7 @@ def get_reports(scheduled_reports, session):
         elif 'CSV' in filetype.upper():
             filetype = '.csv'
         else:
-            print "Unknown filetype: " + filetype()
+            print "Unknown filetype: " + filetype
 
         fullname = report_path.replace(" ", "\ ") + \
                    report_name.replace(" ", "\ ") + filetype
