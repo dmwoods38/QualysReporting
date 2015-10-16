@@ -47,14 +47,13 @@ def build_email(report, subject, recipients):
 def send_emails(reports):
     server = smtplib.SMTP(smtp_server)
     print "Sending emails..."
-    global debug
+
     for report in reports:
-        if debug:
-            print "Report: " + report.email.subject
-        msg = build_email(report.report_filename.replace("\\", ""),
-                          report.email.subject, report.email.recipients)
-        server.sendmail(email_from, msg.get_all('To'), msg.as_string())
-        os.system("mv " + report.report_filename + " " + archive_folder)
+        if report.report_filename is not None:
+            msg = build_email(report.report_filename.replace("\\", ""),
+                              report.email.subject, report.email.recipients)
+            server.sendmail(email_from, msg.get_all('To'), msg.as_string())
+            os.system("mv " + report.report_filename + " " + archive_folder)
 
     server.quit()
 
