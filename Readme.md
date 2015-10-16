@@ -31,7 +31,6 @@ easier to setup I can definitely provide instructions.
 * Some sort of database (only tested on postgresql for now).
 * libpq-dev for psycopg2
 * python-dev for psycopg2
-* python-dev for psycopg2
 * pip to install python packages
 
 
