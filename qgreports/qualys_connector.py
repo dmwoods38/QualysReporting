@@ -172,7 +172,7 @@ def launch_scan_reports(scheduled_reports, session, params=None):
 
     for report in scheduled_reports:
         if report.scan.scan_state.lower() == 'processed':
-            if report.asset_ips is not None:
+            if report.asset_ips is not None and report.asset_ips != "":
                 params.update({"ip_restriction": report.asset_ips})
             params.update({"report_refs": report.scan.scan_id})
             params.update({"output_format": report.output})
