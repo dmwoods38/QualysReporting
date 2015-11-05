@@ -23,6 +23,7 @@ archive_folder = qgreports.config.settings.archive_folder
 email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
+destination = qgreports.config.settings.destination
 
 
 def build_email(report, subject, recipients):
@@ -127,8 +128,10 @@ def main():
         for report in report_list:
             if report.report_id is None:
                 report_list.remove(report)
-        # Change send emails
-        send_emails(report_list)
+        if destination == "email":
+            send_emails(report_list)
+        elif destination == "local":
+            print "Reports saved locally in: " + report_folder
     except Exception as e:
         print e
         sys.exit(2)

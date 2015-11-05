@@ -157,6 +157,7 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
             print "No ips found for: " + report.asset_groups
 
 
+# TODO: Add support for reports with multiple scan refs.
 # Description: Launches scan reports and then returns the refs
 #              with the corresponding report ids
 def launch_scan_reports(scheduled_reports, session, params=None):
