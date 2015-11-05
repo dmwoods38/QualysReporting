@@ -10,7 +10,7 @@ __author__ = "dmwoods38"
 qualys_api_url = qgreports.config.settings.QualysAPI['url']
 xreq_header = {"X-Requested-With": "Python"}
 session_path = "/api/2.0/fo/session/"		
-debug = True 
+debug = qgreports.config.settings.debug
 
 
 # Params: Strings for username and password
