@@ -24,6 +24,7 @@ def parse_scan_results(filename):
         csvdictreader = csv.DictReader(csvfile, csvreader.next(),
                                        dialect='excel')
 
+        # TODO: Change to be dict based.
         for row in csvdictreader:
             if row['QID'] is None:
                 continue

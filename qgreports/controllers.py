@@ -66,6 +66,7 @@ class QGVulnController:
         self.db_session.query(qgreports.models.QGVuln).filter(
             qgreports.models.QGVuln.ip.in_(ips)).delete(
             synchronize_session='fetch')
+        # TODO: Change this to accept an unpacked Dict.
         for vuln in vulns:
             entries.append(
                 qgreports.models.QGVuln(dns=vuln.dns, qid=vuln.qid,

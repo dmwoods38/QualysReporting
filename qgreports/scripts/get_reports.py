@@ -57,7 +57,8 @@ def send_emails(reports):
                               report.email.subject, report.email.recipients)
             server.sendmail(email_from, msg.get_all('To'), msg.as_string())
             os.system("mv " + report.report_filename + " " + archive_folder)
-
+            report.report_filename = archive_folder + \
+                                     report.report_filename.rsplit('/')[-1]
     server.quit()
 
 
@@ -135,12 +136,12 @@ def main():
         elif destination == "local":
             print "Reports saved locally in: " + report_folder
 
-        print "Adding vulnerability information to database"
-        for report in report_list:
-            vulns = parse_scan_results(report.report_filename)
-            vulnctrl = qgreports.controllers.QGVulnController(db_session)
-            vulnctrl.add_all_vulns(vulns)
-            db_session.commit()
+        # print "Adding vulnerability information to database"
+        # for report in report_list:
+        #     vulns = parse_scan_results(report.report_filename)
+        #     vulnctrl = qgreports.controllers.QGVulnController(db_session)
+        #     vulnctrl.add_all_vulns(vulns)
+        #     db_session.commit()
     except Exception as e:
         print e
         sys.exit(2)
