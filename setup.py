@@ -3,7 +3,8 @@ from distutils.core import setup
 setup(
     name='QualysReporting',
     version='0.2.2',
-    packages=['qgreports', 'qgreports.config', 'qgreports.scripts'],
+    packages=['qgreports', 'qgreports.config', 'qgreports.scripts',
+              'qgreports.utils'],
     url='',
     license='',
     author='dmwoods38',
