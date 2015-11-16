@@ -173,6 +173,8 @@ def launch_scan_reports(scheduled_reports, session, params=None):
 
     for report in scheduled_reports:
         if report.scan.scan_state.lower() == 'processed':
+            if 'ip_restriction' in params:
+                del params['ip_restriction']
             if report.asset_ips is not None and report.asset_ips != "":
                 params.update({"ip_restriction": report.asset_ips})
             params.update({"report_refs": report.scan.scan_id})
@@ -247,16 +249,6 @@ def get_reports(scheduled_reports, session):
             check_status(response)
             f.write(response.content)
 
-        # check filetype and rename with appropriate extension
-        # command = "file " + report_path.replace(" ", "\ ") + report_name.replace(" ", "\ ")
-        # command += " | cut -d':' -f2"
-        # filetype = subprocess.check_output(command, shell=True)
-        # if 'PDF' in filetype.upper():
-        #     filetype = '.pdf'
-        # elif 'CSV' in filetype.upper():
-        #     filetype = '.csv'
-        # else:
-        #     print "Unknown filetype: " + filetype
         filetype = '.'+ report.output
         fullname = report_path.replace(" ", "\ ") + \
                    report_name.replace(" ", "\ ") + filetype

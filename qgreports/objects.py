@@ -32,4 +32,18 @@ class Report:
         self.asset_ips = asset_ips
 
 
+class Vuln:
+    def __init__(self, dns, ip, os, qid, severity, scan_date, timezone,
+                 pci_scope, scope):
+        self.dns = dns
+        self.ip = ip
+        self.os = os
+        self.qid = qid
+        self.severity = severity
+        self.scan_date = scan_date
+        self.timezone = timezone
+        self.pci_scope = pci_scope
+        self.scope = scope
+
+
 

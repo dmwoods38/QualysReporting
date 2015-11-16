@@ -5,6 +5,7 @@ import os
 import qgreports.qualys_connector as qc
 import qgreports.config.settings
 import qgreports.models
+import qgreports.controllers
 import datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import or_
@@ -13,6 +14,7 @@ from email.mime.multipart import MIMEMultipart
 from email import encoders
 from qgreports.models import QGReport, QGEmail, QGScan
 from qgreports.objects import Scan, Email, Report
+from qgreports.utils.results_methods import parse_scan_results
 
 __author__ = "dmwoods38"
 
@@ -132,12 +134,18 @@ def main():
             send_emails(report_list)
         elif destination == "local":
             print "Reports saved locally in: " + report_folder
+
+        print "Adding vulnerability information to database"
+        for report in report_list:
+            vulns = parse_scan_results(report.report_filename)
+            vulnctrl = qgreports.controllers.QGVulnController(db_session)
+            vulnctrl.add_all_vulns(vulns)
+            db_session.commit()
     except Exception as e:
         print e
         sys.exit(2)
     finally:
         qc.logout(session)
-
 
     # Close out the db
     db_session.close()

@@ -1,4 +1,5 @@
 import qgreports.models
+import sqlalchemy
 __author__ = 'dmwoods38'
 
 
@@ -45,3 +46,34 @@ class QGReportController:
     # TODO: Update the next report run based on scan run time, report failure,
     # etc.
 
+
+class QGVulnController:
+    def __init__(self, db_session):
+        self.db_session = db_session
+
+    def add_vuln(self, ip, qid, severity, scan_date, timezone,
+                 pci_scope, scope, os=None, dns=None):
+        entry = qgreports.models.QGVuln(dns=dns, qid=qid, severity=severity,
+                                        scan_date=scan_date, timezone=timezone,
+                                        pci_scope=pci_scope, scope=scope,
+                                        ip=ip, os=os)
+
+        self.db_session.add(entry)
+
+    def add_all_vulns(self, vulns):
+        entries = []
+        ips = list({vuln.ip for vuln in vulns})
+        self.db_session.query(qgreports.models.QGVuln).filter(
+            qgreports.models.QGVuln.ip.in_(ips)).delete(
+            synchronize_session='fetch')
+        for vuln in vulns:
+            entries.append(
+                qgreports.models.QGVuln(dns=vuln.dns, qid=vuln.qid,
+                                        severity=vuln.severity,
+                                        scan_date=vuln.scan_date,
+                                        timezone=vuln.timezone,
+                                        pci_scope=vuln.pci_scope,
+                                        scope=vuln.scope,
+                                        ip=vuln.ip, os=vuln.os))
+
+        self.db_session.add_all(entries)

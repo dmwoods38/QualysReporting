@@ -41,6 +41,20 @@ class QGReport(Base):
     active = Column(Boolean, default=True)
 
 
+class QGVuln(Base):
+    __tablename__ = 'qgvulns'
+    id = Column(Integer, Sequence('qgvulns_seq_id'), primary_key=True)
+    dns = Column(String)
+    ip = Column(String, nullable=False)
+    os = Column(String)
+    qid = Column(String, nullable=False)
+    severity = Column(Integer, nullable=False)
+    scan_date = Column(DateTime, nullable=False)
+    timezone = Column(String, nullable=False)
+    pci_scope = Column(Boolean, nullable=False)
+    scope = Column(String, nullable=False)
+
+
 def db_init():
     engine = create_engine(URL(**settings.DATABASE))
     Base.metadata.create_all(engine)
