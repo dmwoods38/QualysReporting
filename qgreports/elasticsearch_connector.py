@@ -43,6 +43,7 @@ def es_scan_results(filename, es=None):
         scan_metadata = {'scan_date': scan_info['scan_date'],
                          'scan_ref': scan_info['scan_ref']}
         for x in vulns:
+            x.__dict__.update(scan_metadata)
             es.index(index='vulnerability', doc_type='qualys',
-                     body=x.__dict__.update(scan_metadata))
+                     body=x.__dict__)
 
