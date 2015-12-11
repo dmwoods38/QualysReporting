@@ -39,7 +39,7 @@ def es_scan_results(filename, es=None):
         scan_info.update({'dead_hosts': dead_hosts,
                             'clean_hosts': clean_hosts})
         es.index(index='scan_metadata', doc_type='qualys',
-                 id=scan_info['reference'], body=scan_info)
+                 id=scan_info['scan_ref'], body=scan_info)
         scan_metadata = {'scan_date': scan_info['scan_date'],
                          'scan_ref': scan_info['scan_ref']}
         for x in vulns:
