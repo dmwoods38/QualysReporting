@@ -62,14 +62,14 @@ def parse_csv_scan_header(row):
     return {'scan_date': scan_date, 'scan_timezone': scan_timezone,
             'active_hosts': active_hosts, 'total_hosts': total_hosts,
             'scan_type': scan_type, 'scan_status': scan_status,
-            'reference': reference, 'duration': duration,
+            'scan_ref': reference, 'duration': duration,
             'scanner_appliance': scanner_appliance, 'ips': ips,
             'scan_title': scan_title, 'asset_groups': asset_groups,
             'excluded_ips': excluded_ips, 'option_profile': option_profile}
 
 
-# Parse CSV and return JSON for elasticsearch.
-def es_scan_results(filename):
+# Parse CSV and return JSONified report.
+def json_scan_results(filename):
     with open(filename, 'r') as csvfile:
         csvreader = csv.reader(csvfile, dialect='excel')
         vulns = []
