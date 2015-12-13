@@ -1,0 +1,52 @@
+{
+  "qualys": {
+    "properties": {
+      "total_hosts": {
+        "type": "string"
+      },
+      "scan_date": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "dead_hosts": {
+        "type": "string"
+      },
+      "scan_title": {
+        "type": "string"
+      },
+      "scan_ref": {
+        "type": "string"
+      },
+      "option_profile": {
+        "type": "string"
+      },
+      "scan_timezone": {
+        "type": "string"
+      },
+      "scan_type": {
+        "type": "string"
+      },
+      "ips": {
+        "type": "string"
+      },
+      "scanner_appliance": {
+        "type": "string"
+      },
+      "active_hosts": {
+        "type": "string"
+      },
+      "duration": {
+        "type": "string"
+      },
+      "excluded_ips": {
+        "type": "string"
+      },
+      "asset_groups": {
+        "type": "string"
+      },
+      "scan_status": {
+        "type": "string"
+      }
+    }
+  }
+}

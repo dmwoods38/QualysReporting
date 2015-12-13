@@ -1,0 +1,97 @@
+{
+  "qualys": {
+    "properties": {
+      "protocol": {
+        "type": "string"
+      },
+      "ip": {
+        "type": "ip"
+      },
+      "scan_date": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "results": {
+        "type": "string"
+      },
+      "solution": {
+        "type": "string"
+      },
+      "ip_status": {
+        "type": "string"
+      },
+      "port": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string"
+      },
+      "severity": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "vendor_reference": {
+        "type": "string"
+      },
+      "instance": {
+        "type": "string"
+      },
+      "dns": {
+        "type": "string"
+      },
+      "qid": {
+        "type": "string"
+      },
+      "netbios": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "impact": {
+        "type": "string"
+      },
+      "cve_id": {
+        "type": "string"
+      },
+      "cvss_base": {
+        "type": "string"
+      },
+      "ssl": {
+        "type": "string"
+      },
+      "cvss_temporal": {
+        "type": "string"
+      },
+      "os_cpe": {
+        "type": "string"
+      },
+      "associated_malware": {
+        "type": "string"
+      },
+      "pci_vuln": {
+        "type": "string"
+      },
+      "fqdn": {
+        "type": "string"
+      },
+      "bugtraq_id": {
+        "type": "string"
+      },
+      "scan_ref": {
+        "type": "string"
+      },
+      "threat": {
+        "type": "string"
+      },
+      "os": {
+        "type": "string"
+      },
+      "exploitability": {
+        "type": "string"
+      }
+    }
+  }
+}

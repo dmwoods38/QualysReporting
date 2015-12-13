@@ -18,7 +18,7 @@ def parse_scan_results(filename):
             csvreader.next()
         date_str, timezone = csvreader.next()[0].split('(')
         scan_date = datetime.datetime.strptime(date_str,
-                                               '%m/%d/%Y at %H:%M:%S ')
+                                               '%m/%d/%Y at %H:%M:%S')
         timezone = timezone.strip(')')
 
         csvreader.next()
@@ -45,7 +45,8 @@ def parse_scan_results(filename):
 # Parse Qualys report scan header and return dict
 def parse_csv_scan_header(row):
     date_str, scan_timezone = row[0].split('(')
-    scan_date = date_str.strip()
+    scan_date = datetime.datetime.strptime(date_str.strip(),
+                                           '%m/%d/%Y at %H:%M:%S').__str__()
     scan_timezone = scan_timezone.strip(')')
     active_hosts = row[1]
     total_hosts = row[2]
