@@ -153,7 +153,9 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
                         report.asset_ips = ''
                     ips = [i.text for i in ip_set_xml.getchildren()]
                     report.asset_ips += ','.join(ips)
-        if report.asset_ips == '' or report.asset_ips is None:
+        if (report.asset_ips == '' or report.asset_ips is None) and \
+                (report.asset_groups != '' and
+                         report.asset_groups is not None):
             print "No ips found for: " + report.asset_groups
 
 

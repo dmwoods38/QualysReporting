@@ -26,6 +26,7 @@ easier to setup I can definitely provide instructions.
 * SQLAlchemy
 * Requests
 * Psycopg2
+* Elasticsearch
 
 ## Other requirements
 * Some sort of database (only tested on postgresql for now).

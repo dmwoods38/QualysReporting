@@ -21,13 +21,13 @@
         "type": "string"
       },
       "port": {
-        "type": "string"
+        "type": "integer"
       },
       "category": {
         "type": "string"
       },
       "severity": {
-        "type": "string"
+        "type": "integer"
       },
       "title": {
         "type": "string"
