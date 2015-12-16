@@ -3,6 +3,7 @@ import csv
 import qgreports.objects
 import qgreports.config.settings
 import elasticsearch
+import os
 from requests_aws4auth import AWS4Auth
 from qgreports.utils.results_methods import parse_csv_scan_header
 __author__ = 'dmwoods38'
