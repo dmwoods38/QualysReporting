@@ -8,8 +8,6 @@ import qgreports.models
 import qgreports.controllers
 import qgreports.elasticsearch_connector as es_connector
 import datetime
-import elasticsearch
-import json
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import or_
 from email.mime.base import MIMEBase
@@ -28,10 +26,6 @@ email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
-
-es_mapping_path = os.path.dirname(os.path.realpath(__file__))
-vuln_mapping_path = es_mapping_path + '/../config/qualys-vuln-mapping.json'
-scan_mapping_path = es_mapping_path + '/../config/qualys-scan-mapping.json'
 
 
 def build_email(report, subject, recipients):
@@ -144,17 +138,7 @@ def main():
         elif destination == "elasticsearch":
             print "Putting scan results into elasticsearch"
             # Initialize elasticsearch mappings
-            es = elasticsearch.Elasticsearch()
-            with open(vuln_mapping_path, 'r') as f:
-                es.indices.create(index='vulnerability')
-                es.indices.put_mapping(index='vulnerability',
-                                       doc_type='qualys',
-                                       body=json.dumps(json.load(f)))
-            with open(scan_mapping_path, 'r') as f:
-                es.indices.create(index='scan_metadata')
-                es.indices.put_mapping(index='scan_metadata',
-                                       doc_type='qualys',
-                                       body=json.dumps(json.load(f)))
+            es = es_connector.initialize_es()
             for report in report_list:
                 es_connector.es_scan_results(report.report_filename, es=es)
     except Exception as e:
