@@ -34,16 +34,18 @@ def initialize_es():
                                              port=es_config['port'])
     else:
         es = elasticsearch.Elasticsearch()
-    with open(vuln_mapping_path, 'r') as f:
-        es.indices.create(index='vulnerability')
-        es.indices.put_mapping(index='vulnerability',
-                               doc_type='qualys',
-                               body=json.dumps(json.load(f)))
-    with open(scan_mapping_path, 'r') as f:
-        es.indices.create(index='scan_metadata')
-        es.indices.put_mapping(index='scan_metadata',
-                               doc_type='qualys',
-                               body=json.dumps(json.load(f)))
+    if not es.indices.exists(index='vulnerability'):
+        with open(vuln_mapping_path, 'r') as f:
+            es.indices.create(index='vulnerability')
+            es.indices.put_mapping(index='vulnerability',
+                                   doc_type='qualys',
+                                   body=json.dumps(json.load(f)))
+    if not es.indices.exists(index='scan_metadata'):
+        with open(scan_mapping_path, 'r') as f:
+            es.indices.create(index='scan_metadata')
+            es.indices.put_mapping(index='scan_metadata',
+                                   doc_type='qualys',
+                                   body=json.dumps(json.load(f)))
     return es
 
 

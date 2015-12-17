@@ -140,7 +140,8 @@ def main():
             # Initialize elasticsearch mappings
             es = es_connector.initialize_es()
             for report in report_list:
-                es_connector.es_scan_results(report.report_filename, es=es)
+                sanitized_report_name = report.report_filename.replace('\\')
+                es_connector.es_scan_results(sanitized_report_name, es=es)
     except Exception as e:
         print e
         sys.exit(2)
