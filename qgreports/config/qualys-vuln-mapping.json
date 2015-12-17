@@ -94,7 +94,8 @@
         "type": "string"
       },
       "os": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "exploitability": {
         "type": "string"
