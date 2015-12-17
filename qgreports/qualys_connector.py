@@ -5,6 +5,7 @@ import datetime
 import time
 import subprocess
 import qgreports.config.settings
+import certifi
 
 __author__ = "dmwoods38"
 qualys_api_url = qgreports.config.settings.QualysAPI['url']
@@ -67,9 +68,12 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
         print "Params: " + str(params)
     try:
         if verb.upper() == 'GET':
-            s = session.get(qualys_api_url+dest_url, params=params, headers=headers)
+            s = session.get(qualys_api_url+dest_url, params=params,
+                            headers=headers, verify=certifi.where())
         elif verb.upper() == 'POST':
-            s = session.post(qualys_api_url+dest_url, params=params, headers=headers, data=data)
+            s = session.post(qualys_api_url+dest_url, params=params,
+                             headers=headers, data=data,
+                             verify=certifi.where())
         else:
             print "Unsupported HTTP verb: " + verb
             sys.exit(2)
