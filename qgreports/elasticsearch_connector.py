@@ -4,6 +4,7 @@ import qgreports.objects
 import qgreports.config.settings
 import elasticsearch
 import os
+import certifi
 from requests_aws4auth import AWS4Auth
 from qgreports.utils.results_methods import parse_csv_scan_header
 __author__ = 'dmwoods38'
@@ -28,10 +29,14 @@ def initialize_es():
                                              port=es_config['port'],
                                              http_auth=auth,
                                              use_ssl=es_config['use_ssl'],
+                                             verify_certs=True,
+                                             ca_certs=certifi.where(),
                                              connection_class=conn)
         else:
             es = elasticsearch.Elasticsearch(host=es_config['host'],
-                                             port=es_config['port'])
+                                             port=es_config['port'],
+                                             verify_certs=True,
+                                             ca_certs=certifi.where(),)
     else:
         es = elasticsearch.Elasticsearch()
     if not es.indices.exists(index='vulnerability'):
