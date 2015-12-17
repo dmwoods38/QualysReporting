@@ -30,7 +30,8 @@
         "type": "integer"
       },
       "title": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "vendor_reference": {
         "type": "string"
@@ -39,13 +40,15 @@
         "type": "string"
       },
       "dns": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "qid": {
         "type": "string"
       },
       "netbios": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "type": {
         "type": "string"
@@ -54,16 +57,19 @@
         "type": "string"
       },
       "cve_id": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "cvss_base": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "ssl": {
         "type": "string"
       },
       "cvss_temporal": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "os_cpe": {
         "type": "string"
@@ -75,7 +81,8 @@
         "type": "string"
       },
       "fqdn": {
-        "type": "string"
+        "type": "string",
+        "index": "not_analyzed"
       },
       "bugtraq_id": {
         "type": "string"
