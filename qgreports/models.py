@@ -36,6 +36,7 @@ class QGReport(Base):
     report_run = Column(DateTime)
     day_of_month = Column(Integer)
     day_of_week = Column(Integer)
+    tags = Column(String)
     output_pdf = Column(Boolean, nullable=False)
     output_csv = Column(Boolean, nullable=False)
     active = Column(Boolean, default=True)
