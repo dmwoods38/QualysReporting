@@ -59,7 +59,7 @@ def main():
         else:
             day_of_week = None
         if 'tags' in report:
-            tags = ','.join(report['tags'].encode('utf8', 'ignore'))
+            tags = ','.join(report['tags']).encode('utf8', 'ignore')
         else:
             tags = None
         result = qgscans.filter(QGScan.scan_title == scan_title)[:1]
