@@ -29,7 +29,7 @@ easier to setup I can definitely provide instructions.
 * Elasticsearch
 
 ## Other requirements
-* Some sort of database (only tested on postgresql for now).
+* Postgresql
 * libpq-dev for psycopg2
 * python-dev for psycopg2
 * pip to install python packages

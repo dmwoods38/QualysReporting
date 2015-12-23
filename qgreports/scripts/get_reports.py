@@ -91,11 +91,13 @@ def main():
         scan = Scan(scan_name=row[1].scan_title)
         if report_result.output_csv:
             report = Report(email=email, scan=scan, output='csv',
-                            asset_groups=report_result.asset_groups)
+                            asset_groups=report_result.asset_groups,
+                            tags=report_result.tags)
             report_list.append(report)
         if report_result.output_pdf:
             report = Report(email=email, scan=scan, output='pdf',
-                            asset_groups=report_result.asset_groups)
+                            asset_groups=report_result.asset_groups,
+                            tags=report_result.tags)
             report_list.append(report)
 
     session = qc.login(user, password)
@@ -142,7 +144,8 @@ def main():
             for report in report_list:
                 sanitized_report_name = report.report_filename.replace('\\',
                                                                        '')
-                es_connector.es_scan_results(sanitized_report_name, es=es)
+                es_connector.es_scan_results(sanitized_report_name,
+                                             report_tags=report.tags, es=es)
     except Exception as e:
         print e
         sys.exit(2)

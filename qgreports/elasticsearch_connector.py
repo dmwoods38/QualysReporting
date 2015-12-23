@@ -55,7 +55,7 @@ def initialize_es():
 
 
 # Parse CSV and send results into elasticsearch.
-def es_scan_results(filename, es=None):
+def es_scan_results(filename, report_tags, es=None):
     with open(filename, 'r') as csvfile:
         if es is None:
             es = elasticsearch.Elasticsearch()
@@ -86,10 +86,15 @@ def es_scan_results(filename, es=None):
             vulns.append(entry)
         scan_info.update({'dead_hosts': dead_hosts,
                             'clean_hosts': clean_hosts})
+        if report_tags is not None:
+            scan_info.update({'tags': report_tags.split(',')})
+        else:
+            scan_info.update({'tags': None})
         es.index(index='scan_metadata', doc_type='qualys',
                  id=scan_info['scan_ref'], body=scan_info)
         scan_metadata = {'scan_date': scan_info['scan_date'],
-                         'scan_ref': scan_info['scan_ref']}
+                         'scan_ref': scan_info['scan_ref'],
+                         'tags': scan_info['tags']}
         for x in vulns:
             x.__dict__.update(scan_metadata)
             es.index(index='vulnerability', doc_type='qualys',

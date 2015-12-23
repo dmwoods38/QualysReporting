@@ -99,6 +99,9 @@
       },
       "exploitability": {
         "type": "string"
+      },
+      "tags": {
+        "type": "string"
       }
     }
   }

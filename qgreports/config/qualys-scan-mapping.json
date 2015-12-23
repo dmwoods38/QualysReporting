@@ -46,6 +46,9 @@
       },
       "scan_status": {
         "type": "string"
+      },
+      "tags": {
+        "type": "string"
       }
     }
   }
