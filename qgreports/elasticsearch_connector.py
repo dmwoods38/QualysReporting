@@ -92,7 +92,6 @@ def es_scan_results(filename, report_tags, es=None):
             scan_info.update({'tags': None})
         es.index(index='scan_metadata', doc_type='qualys',
                  id=scan_info['scan_ref'], body=scan_info)
-        print scan_info
         scan_metadata = {'scan_date': scan_info['scan_date'],
                          'scan_ref': scan_info['scan_ref'],
                          'tags': scan_info['tags']}
