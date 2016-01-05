@@ -80,7 +80,7 @@ def build_freq_str(sched):
         if freq.attrib.get('day_of_week') is not None:
             day_of_week = int_day_to_str(freq.attrib.get('day_of_week'))
             week_of_month = freq.attrib.get('week_of_month')
-            if week_of_month =='1':
+            if week_of_month == '1':
                 week_of_month_str = 'the 1st'
             elif week_of_month == '2':
                 week_of_month_str = 'the 2nd'
