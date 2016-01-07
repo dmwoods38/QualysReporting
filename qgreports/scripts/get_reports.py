@@ -8,6 +8,7 @@ import qgreports.models
 import qgreports.controllers
 import qgreports.elasticsearch_connector as es_connector
 import datetime
+import traceback
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import or_
 from email.mime.base import MIMEBase
@@ -15,7 +16,6 @@ from email.mime.multipart import MIMEMultipart
 from email import encoders
 from qgreports.models import QGReport, QGEmail, QGScan
 from qgreports.objects import Scan, Email, Report
-
 __author__ = "dmwoods38"
 
 user = qgreports.config.settings.QualysAPI['username']
@@ -109,7 +109,7 @@ def main():
         qc.launch_scan_reports(report_list, session)
 
         # wait for reports to complete save API calls..
-        wait = 30
+        wait = 120
         print "Waiting " + str(wait) + " seconds for reports to complete..."
         time.sleep(wait)
         qc.check_report_status(report_list, session)
@@ -149,7 +149,7 @@ def main():
                 es_connector.es_scan_results(sanitized_report_name,
                                              report_tags=report.tags, es=es)
     except Exception as e:
-        print e
+        traceback.print_exc()
         sys.exit(2)
     finally:
         qc.logout(session)
