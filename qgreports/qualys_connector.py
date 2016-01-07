@@ -240,28 +240,28 @@ def get_reports(scheduled_reports, session):
     params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
     today = datetime.date.today().__str__()
-    report_path = qgreports.config.settings.report_folder
+    report_path = qgreports.config.settings.report_folder.replace(" ", "\ ")
     report_suffix = " " + today
+    keepcharacters = (' ', '.', '_', '/')
     print "Trying to get reports..."
     for report in scheduled_reports:
         if report.report_id is None:
             continue
         params.update({"id": report.report_id})
-        report_name = report.email.subject
-        report_name += report_suffix
+        report_name = ''.join(c for c in report.email.subject if c.isalnum()
+                              or c in keepcharacters).rstrip().replace(" ",
+                                                                       "\ ")
+        report_name = report_name.replace('/', '_') + report_suffix
 
         with open(report_path + report_name, "ab") as f:
             response = request(params, session, dest_url)
             check_status(response)
             f.write(response.content)
 
-        filetype = '.'+ report.output
-        fullname = report_path.replace(" ", "\ ") + \
-                   report_name.replace(" ", "\ ") + filetype
+        filetype = '.' + report.output
+        fullname = report_path + report_name + filetype
 
-        command = "mv " + report_path.replace(" ", "\ ")
-        command = command + report_name.replace(" ", "\ ") + \
-                  " " + fullname
+        command = "mv " + report_path + report_name + " " + fullname
         subprocess.call(command, shell=True)
         report.report_filename = fullname
 
@@ -270,7 +270,8 @@ def get_reports(scheduled_reports, session):
 def get_scan_results(scans_with_refs, session, scans_with_files,
                             folder="/root/reports/",
                             format="csv", params={}):
-    params.update({"action":"fetch","mode":"brief", "output_format":format})
+    params.update({"action": "fetch", "mode": "brief",
+                   "output_format": format})
     dest_url = "/api/2.0/fo/scan/"
     processed = scans_with_refs['processed']
     unprocessed = scans_with_refs['unprocessed']
@@ -280,7 +281,8 @@ def get_scan_results(scans_with_refs, session, scans_with_files,
             response = request(params, session, dest_url)
             file = scans_with_files[scan] if scans_with_files[scan] else scan
             filename = folder + file
-            filename = filename +"_"+datetime.date.today().__str__() + "." + format
+            filename = filename + "_" +datetime.date.today().__str__()
+            filename = filename + "." + format
             with open(filename, "a") as f:
                 f.write(response.text)
 
@@ -288,5 +290,3 @@ def get_scan_results(scans_with_refs, session, scans_with_files,
         with open("/root/unprocessed.log", "a") as f:
             f.write("Unprocessed for " + datetime.date.today().__str__())
             f.write(str(unprocessed))
-
-#def get_hosts_list(session, ag_names=
