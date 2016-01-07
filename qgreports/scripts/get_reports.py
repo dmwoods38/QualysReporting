@@ -107,7 +107,7 @@ def main():
         qc.launch_scan_reports(report_list, session)
 
         # wait for reports to complete save API calls..
-        wait = 120
+        wait = 30
         print "Waiting " + str(wait) + " seconds for reports to complete..."
         time.sleep(wait)
         qc.check_report_status(report_list, session)
