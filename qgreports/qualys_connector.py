@@ -241,7 +241,7 @@ def get_reports(scheduled_reports, session):
     dest_url = "/api/2.0/fo/report/"
     today = datetime.date.today().__str__()
     report_path = qgreports.config.settings.report_folder.replace(" ", "\ ")
-    report_suffix = "\ " + today
+    report_suffix = ' ' + today
     keepcharacters = (' ', '.', '_', '/', '-')
     print "Trying to get reports..."
     for report in scheduled_reports:
