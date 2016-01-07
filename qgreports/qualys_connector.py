@@ -253,18 +253,11 @@ def get_reports(scheduled_reports, session):
         report_name = report_name.replace('/', '_') + report_suffix
 
         filetype = '.' + report.output
-        with open(report_path + report_name + filetype, "ab") as f:
+        report.report_filename = report_path + report_name + filetype
+        with open(report.report_filename, "ab") as f:
             response = request(params, session, dest_url)
             check_status(response)
             f.write(response.content)
-
-
-        fullname = report_path + report_name + filetype
-        print fullname
-        # command = "mv " + report_path + report_name + " " + fullname
-        # print command
-        # subprocess.call(command, shell=True)
-        report.report_filename = fullname
 
 
 # Returns API scan results, not the same as a scan report. Much less detail.

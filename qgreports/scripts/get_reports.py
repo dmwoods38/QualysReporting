@@ -56,7 +56,9 @@ def send_emails(reports):
             msg = build_email(report.report_filename.replace("\\", ""),
                               report.email.subject, report.email.recipients)
             server.sendmail(email_from, msg.get_all('To'), msg.as_string())
-            os.system("mv " + report.report_filename + " " + archive_folder)
+            # os.system("mv " + report.report_filename + " " + archive_folder)
+            os.rename(report.report_filename, archive_folder +
+                                     report.report_filename.rsplit('/')[-1])
             report.report_filename = archive_folder + \
                                      report.report_filename.rsplit('/')[-1]
     server.quit()
