@@ -58,6 +58,10 @@ def main():
             day_of_week = int(report['day_of_week'])
         else:
             day_of_week = None
+        if 'tags' in report:
+            tags = ','.join(report['tags']).encode('utf8', 'ignore')
+        else:
+            tags = None
         result = qgscans.filter(QGScan.scan_title == scan_title)[:1]
         scan_id = result[0].id
         list_name = report['list_name'].encode('utf8', 'ignore')
@@ -72,7 +76,7 @@ def main():
                              email_id=email_id, output_pdf=output_pdf,
                              output_csv=output_csv, day_of_month=day_of_month,
                              day_of_week=day_of_week,
-                             email_subject=email_subject))
+                             email_subject=email_subject, tags=tags))
     # At the very end commit the session.
     session.commit()
 

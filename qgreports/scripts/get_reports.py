@@ -8,8 +8,6 @@ import qgreports.models
 import qgreports.controllers
 import qgreports.elasticsearch_connector as es_connector
 import datetime
-import elasticsearch
-import json
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import or_
 from email.mime.base import MIMEBase
@@ -28,10 +26,6 @@ email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
-
-es_mapping_path = os.path.dirname(os.path.realpath(__file__))
-vuln_mapping_path = es_mapping_path + '/../config/qualys-vuln-mapping.json'
-scan_mapping_path = es_mapping_path + '/../config/qualys-scan-mapping.json'
 
 
 def build_email(report, subject, recipients):
@@ -62,7 +56,9 @@ def send_emails(reports):
             msg = build_email(report.report_filename.replace("\\", ""),
                               report.email.subject, report.email.recipients)
             server.sendmail(email_from, msg.get_all('To'), msg.as_string())
-            os.system("mv " + report.report_filename + " " + archive_folder)
+            # os.system("mv " + report.report_filename + " " + archive_folder)
+            os.rename(report.report_filename, archive_folder +
+                                     report.report_filename.rsplit('/')[-1])
             report.report_filename = archive_folder + \
                                      report.report_filename.rsplit('/')[-1]
     server.quit()
@@ -97,11 +93,13 @@ def main():
         scan = Scan(scan_name=row[1].scan_title)
         if report_result.output_csv:
             report = Report(email=email, scan=scan, output='csv',
-                            asset_groups=report_result.asset_groups)
+                            asset_groups=report_result.asset_groups,
+                            tags=report_result.tags)
             report_list.append(report)
         if report_result.output_pdf:
             report = Report(email=email, scan=scan, output='pdf',
-                            asset_groups=report_result.asset_groups)
+                            asset_groups=report_result.asset_groups,
+                            tags=report_result.tags)
             report_list.append(report)
 
     session = qc.login(user, password)
@@ -111,7 +109,7 @@ def main():
         qc.launch_scan_reports(report_list, session)
 
         # wait for reports to complete save API calls..
-        wait = 120
+        wait = 30
         print "Waiting " + str(wait) + " seconds for reports to complete..."
         time.sleep(wait)
         qc.check_report_status(report_list, session)
@@ -144,19 +142,12 @@ def main():
         elif destination == "elasticsearch":
             print "Putting scan results into elasticsearch"
             # Initialize elasticsearch mappings
-            es = elasticsearch.Elasticsearch()
-            with open(vuln_mapping_path, 'r') as f:
-                es.indices.create(index='vulnerability')
-                es.indices.put_mapping(index='vulnerability',
-                                       doc_type='qualys',
-                                       body=json.dumps(json.load(f)))
-            with open(scan_mapping_path, 'r') as f:
-                es.indices.create(index='scan_metadata')
-                es.indices.put_mapping(index='scan_metadata',
-                                       doc_type='qualys',
-                                       body=json.dumps(json.load(f)))
+            es = es_connector.initialize_es()
             for report in report_list:
-                es_connector.es_scan_results(report.report_filename, es=es)
+                sanitized_report_name = report.report_filename.replace('\\',
+                                                                       '')
+                es_connector.es_scan_results(sanitized_report_name,
+                                             report_tags=report.tags, es=es)
     except Exception as e:
         print e
         sys.exit(2)

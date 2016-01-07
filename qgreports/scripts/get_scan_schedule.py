@@ -1,9 +1,9 @@
-#!/usr/local/bin/python
+#!/usr/bin/python
 # Author: Dean Woods
 # Created: 6/23/15
-# Last modified: 7/6/15
+# Last modified: 1/5/16
 # Description:
-#     This is intended to download the current scan schedule from LNE's 
+#     This is intended to download the current scan schedule from a
 #     Qualys account. You must have a valid login with read privs in 
 #     order to use this.
 import getpass
@@ -80,7 +80,20 @@ def build_freq_str(sched):
         if freq.attrib.get('day_of_week') is not None:
             day_of_week = int_day_to_str(freq.attrib.get('day_of_week'))
             week_of_month = freq.attrib.get('week_of_month')
-            s = s + day_of_week + " of week " + week_of_month
+            if week_of_month == '1':
+                week_of_month_str = 'the 1st'
+            elif week_of_month == '2':
+                week_of_month_str = 'the 2nd'
+            elif week_of_month == '3':
+                week_of_month_str = 'the 3rd'
+            elif week_of_month == '4':
+                week_of_month_str = 'the 4th'
+            elif week_of_month == '5':
+                week_of_month_str = 'the last'
+            else:
+                raise ValueError("Unexpected week of the month")
+            s = s + week_of_month_str + ' '
+            s = s + day_of_week + " of the month"
         else:
             s = s + "day " + freq.attrib.get('day_of_month')
         return s
@@ -120,9 +133,11 @@ def parse_schedule(schedule_xml):
         minute = sched.find("./START_MINUTE").text
         time = time + minute if len(minute) == 2 else time + '0' + minute
         timezone = sched.find("./TIME_ZONE").find("./TIME_ZONE_DETAILS").text
+        next_launch = sched.find("./NEXTLAUNCH_UTC").text
         schedule = {"Title": title, "Targets": target}
         schedule.update({"Address Groups": ", ".join(ags), "Frequency": freq_str})
         schedule.update({"Time": time, "Timezone": timezone})
+        schedule.update({"Next Launch (UTC)": next_launch})
         schedules.append(schedule)
     return schedules
 
@@ -149,6 +164,7 @@ def write_csv(filename, schedules, columns=None, sep=';'):
         buf = buf + schedule.get('Frequency') + sep
         buf = buf + schedule.get('Time') + sep
         buf = buf + schedule.get('Timezone') + sep
+        buf = buf + schedule.get('Next Launch (UTC)') + sep
         buf += "\n"
     f.write(buf.encode('ascii', 'ignore'))
     f.close()
@@ -184,7 +200,7 @@ def main():
     schedules = parse_schedule(tree)
     if outfile is not None:
         cols = ['Scan Name', 'Address Groups', 'IPs', 'Frequency', 'Time',
-                'Timezone']
+                'Timezone', 'Next Launch (UTC)']
         write_csv(outfile, schedules, columns=cols)
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ import datetime
 import time
 import subprocess
 import qgreports.config.settings
+import certifi
 
 __author__ = "dmwoods38"
 qualys_api_url = qgreports.config.settings.QualysAPI['url']
@@ -67,9 +68,12 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
         print "Params: " + str(params)
     try:
         if verb.upper() == 'GET':
-            s = session.get(qualys_api_url+dest_url, params=params, headers=headers)
+            s = session.get(qualys_api_url+dest_url, params=params,
+                            headers=headers, verify=certifi.where())
         elif verb.upper() == 'POST':
-            s = session.post(qualys_api_url+dest_url, params=params, headers=headers, data=data)
+            s = session.post(qualys_api_url+dest_url, params=params,
+                             headers=headers, data=data,
+                             verify=certifi.where())
         else:
             print "Unsupported HTTP verb: " + verb
             sys.exit(2)
@@ -236,37 +240,32 @@ def get_reports(scheduled_reports, session):
     params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
     today = datetime.date.today().__str__()
-    report_path = qgreports.config.settings.report_folder
-    report_suffix = " " + today
+    report_path = qgreports.config.settings.report_folder.replace(" ", "\ ")
+    report_suffix = ' ' + today
+    keepcharacters = (' ', '.', '_', '/', '-')
     print "Trying to get reports..."
     for report in scheduled_reports:
         if report.report_id is None:
             continue
         params.update({"id": report.report_id})
-        report_name = report.email.subject
-        report_name += report_suffix
+        report_name = ''.join(c for c in report.email.subject if c.isalnum()
+                              or c in keepcharacters).replace(" ", "\ ")
+        report_name = report_name.replace('/', '_') + report_suffix
 
-        with open(report_path + report_name, "ab") as f:
+        filetype = '.' + report.output
+        report.report_filename = report_path + report_name + filetype
+        with open(report.report_filename, "ab") as f:
             response = request(params, session, dest_url)
             check_status(response)
             f.write(response.content)
-
-        filetype = '.'+ report.output
-        fullname = report_path.replace(" ", "\ ") + \
-                   report_name.replace(" ", "\ ") + filetype
-
-        command = "mv " + report_path.replace(" ", "\ ")
-        command = command + report_name.replace(" ", "\ ") + \
-                  " " + fullname
-        subprocess.call(command, shell=True)
-        report.report_filename = fullname
 
 
 # Returns API scan results, not the same as a scan report. Much less detail.
 def get_scan_results(scans_with_refs, session, scans_with_files,
                             folder="/root/reports/",
                             format="csv", params={}):
-    params.update({"action":"fetch","mode":"brief", "output_format":format})
+    params.update({"action": "fetch", "mode": "brief",
+                   "output_format": format})
     dest_url = "/api/2.0/fo/scan/"
     processed = scans_with_refs['processed']
     unprocessed = scans_with_refs['unprocessed']
@@ -276,7 +275,8 @@ def get_scan_results(scans_with_refs, session, scans_with_files,
             response = request(params, session, dest_url)
             file = scans_with_files[scan] if scans_with_files[scan] else scan
             filename = folder + file
-            filename = filename +"_"+datetime.date.today().__str__() + "." + format
+            filename = filename + "_" +datetime.date.today().__str__()
+            filename = filename + "." + format
             with open(filename, "a") as f:
                 f.write(response.text)
 
@@ -284,5 +284,3 @@ def get_scan_results(scans_with_refs, session, scans_with_files,
         with open("/root/unprocessed.log", "a") as f:
             f.write("Unprocessed for " + datetime.date.today().__str__())
             f.write(str(unprocessed))
-
-#def get_hosts_list(session, ag_names=
