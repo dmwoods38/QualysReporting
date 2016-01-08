@@ -249,7 +249,7 @@ def get_reports(scheduled_reports, session):
             continue
         params.update({"id": report.report_id})
         report_name = ''.join(c for c in report.email.subject if c.isalnum()
-                              or c in keepcharacters).replace(" ", "\ ")
+                              or c in keepcharacters)
         report_name = report_name.replace('/', '_') + report_suffix
 
         filetype = '.' + report.output
