@@ -135,6 +135,8 @@ def main():
         for report in report_list:
             if report.report_id is None:
                 report_list.remove(report)
+        # TODO:  Extract the destinations into some AbstractClass to allow
+        #        easier extension.
         if destination == "email":
             send_emails(report_list)
         elif destination == "local":
