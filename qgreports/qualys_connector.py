@@ -236,12 +236,16 @@ def check_report_status(scheduled_reports, session):
 
 
 # Download reports
-def get_reports(scheduled_reports, session):
+def get_reports(scheduled_reports, session, add_timestamp=None):
     params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
-    today = datetime.date.today().__str__()
-    report_path = qgreports.config.settings.report_folder.replace(" ", "\ ")
-    report_suffix = ' ' + today
+    report_path = qgreports.config.settings.report_folder
+
+    if add_timestamp is None or add_timestamp:
+        today = datetime.date.today().__str__()
+        report_suffix = ' ' + today
+    else:
+        report_suffix = ''
     keepcharacters = (' ', '.', '_', '/', '-')
     print "Trying to get reports..."
     for report in scheduled_reports:
