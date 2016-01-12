@@ -26,6 +26,7 @@ email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
+add_timestamp = qgreports.config.settings.add_timestamp
 
 
 def build_email(report, subject, recipients):
@@ -130,7 +131,7 @@ def main():
                 if report.report_status.lower() == 'finished':
                     unfinished_reports.remove(report)
 
-        qc.get_reports(report_list, session)
+        qc.get_reports(report_list, session, add_timestamp)
 
         for report in report_list:
             if report.report_id is None:
