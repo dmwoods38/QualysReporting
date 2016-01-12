@@ -26,7 +26,10 @@ email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
-add_timestamp = qgreports.config.settings.add_timestamp
+if 'add_timestamp' in qgreports.config.settings.__dict__:
+    add_timestamp = qgreports.config.settings.add_timestamp
+else:
+    add_timestamp = None
 
 
 def build_email(report, subject, recipients):
