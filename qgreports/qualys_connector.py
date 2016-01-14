@@ -264,10 +264,11 @@ def get_reports(scheduled_reports, session, add_timestamp=True,
                 response = request(params, session, dest_url)
                 check_status(response)
                 f.write(response.content)
-        with open(report.report_filename, 'wb') as f:
-            response = request(params, session, dest_url)
-            check_status(response)
-            f.write(response.content)
+        else:
+            with open(report.report_filename, 'wb') as f:
+                response = request(params, session, dest_url)
+                check_status(response)
+                f.write(response.content)
 
 
 # Returns API scan results, not the same as a scan report. Much less detail.
