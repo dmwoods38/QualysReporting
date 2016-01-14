@@ -236,12 +236,13 @@ def check_report_status(scheduled_reports, session):
 
 
 # Download reports
-def get_reports(scheduled_reports, session, add_timestamp=None):
+def get_reports(scheduled_reports, session, add_timestamp=True,
+                no_clobber=False):
     params = {"action": "fetch"}
     dest_url = "/api/2.0/fo/report/"
     report_path = qgreports.config.settings.report_folder
 
-    if add_timestamp is None or add_timestamp:
+    if add_timestamp:
         today = datetime.date.today().__str__()
         report_suffix = ' ' + today
     else:
@@ -258,7 +259,12 @@ def get_reports(scheduled_reports, session, add_timestamp=None):
 
         filetype = '.' + report.output
         report.report_filename = report_path + report_name + filetype
-        with open(report.report_filename, "ab") as f:
+        if no_clobber:
+            with open(report.report_filename, 'ab') as f:
+                response = request(params, session, dest_url)
+                check_status(response)
+                f.write(response.content)
+        with open(report.report_filename, 'wb') as f:
             response = request(params, session, dest_url)
             check_status(response)
             f.write(response.content)

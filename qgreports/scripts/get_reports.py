@@ -29,7 +29,7 @@ destination = qgreports.config.settings.destination
 if 'add_timestamp' in qgreports.config.settings.__dict__:
     add_timestamp = qgreports.config.settings.add_timestamp
 else:
-    add_timestamp = None
+    add_timestamp = True
 
 
 def build_email(report, subject, recipients):
