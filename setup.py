@@ -1,15 +1,14 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     name='QualysReporting',
-    version='0.2.3',
+    version='0.2.4dev',
     install_requires=['requests', 'sqlalchemy', 'psycopg2', 'certifi'],
-    packages=['qgreports', 'qgreports.config', 'qgreports.scripts',
-              'qgreports.utils'],
+    packages=find_packages(),
     package_data={'qgreports': ['config/*']},
-    url='',
-    license='',
+    url='https://github.com/dmwoods38/QualysReporting',
+    license='MIT',
     author='dmwoods38',
     author_email='',
-    description=''
+    description='Tool to help with automation of Qualys Scan Report delivery'
 )
