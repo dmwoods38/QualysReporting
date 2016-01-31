@@ -63,7 +63,7 @@ from the Quick Actions menu.
 * Services and Ports
   * Add all to "Available Services"
   
-Once you have created the report template, take not of the Template ID, it will
+Once you have created the report template, take note of the Template ID, it will
 need to be added to the settings file.
 
 #### User Requirements
@@ -135,6 +135,7 @@ Schedule Object configuration:
               as the email_list field.
 * day_of_month - use this for monthly reports.
 * day_of_week - use for weekly reports days are numbered 0(Monday)-6(Sunday).
+
 ## v 0.2.0
 Stuff actually works now. Setup instructions and dockerfile/containers to come.
 
