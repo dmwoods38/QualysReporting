@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='QualysReporting',
-    version='0.2.4dev',
+    version='0.2.5dev',
     install_requires=['requests', 'sqlalchemy', 'psycopg2', 'certifi'],
     packages=find_packages(),
     package_data={'qgreports': ['config/*']},
