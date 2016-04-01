@@ -119,12 +119,12 @@ def main():
         email = Email(recipients=report.get('email_list'),
                       subject=report.get('email_subject'))
         scan = Scan(scan_name=report.get('scan_title'))
-        if bool(report.get('output_csv')):
+        if report.get('output_csv') == 'True':
             r = Report(email=email, scan=scan, output='csv',
                             asset_groups=report.get('asset_groups'),
                             tags=report.get('tags'))
             report_list.append(r)
-        if bool(report.get('output_pdf')):
+        if report.get('output_pdf') == 'True':
             r = Report(email=email, scan=scan, output='pdf',
                             asset_groups=report.get('asset_groups'),
                             tags=report.get('tags'))
