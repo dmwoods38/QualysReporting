@@ -27,7 +27,7 @@ email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
-report_config = os.getcwd() + '/qgreports/config/reports.json'
+report_config = os.path.dirname(qgreports.config.__file__) + '/reports.json'
 
 if 'add_timestamp' in qgreports.config.settings.__dict__:
     add_timestamp = qgreports.config.settings.add_timestamp
