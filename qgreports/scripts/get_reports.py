@@ -4,14 +4,10 @@ import time
 import os
 import qgreports.qualys_connector as qc
 import qgreports.config.settings
-import qgreports.models
-import qgreports.controllers
 import qgreports.elasticsearch_connector as es_connector
 import datetime
 import traceback
 import json
-# from sqlalchemy.orm import sessionmaker
-# from sqlalchemy import or_
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
@@ -71,18 +67,7 @@ def send_emails(reports):
 
 
 def main():
-    # Set up DB connection
-    # engine = qgreports.models.db_init()
-    # Session = sessionmaker(bind=engine)
-    # db_session = Session()
-
     # Get today's reports
-    # scheduled_reports = db_session.query(QGEmail,
-    #                                   QGScan,
-    #                                   QGReport).join(QGReport).join(QGScan)
-    # scheduled_reports = scheduled_reports.filter(
-    #     or_(QGReport.day_of_month == datetime.date.today().day,
-    #         QGReport.day_of_week == datetime.date.today().weekday()))
     with open(report_config) as f:
         report_entries = json.load(f)
     scheduled_reports = []
@@ -99,22 +84,6 @@ def main():
                   datetime.date.today().__str__()
         sys.exit()
     report_list = []
-    # Parse the scheduled_reports into objects for easier manipulation.
-    # for row in scheduled_reports:
-    #     report_result = row[2]
-    #     email = Email(recipients=row[0].email_list,
-    #                   subject=report_result.email_subject)
-    #     scan = Scan(scan_name=row[1].scan_title)
-    #     if report_result.output_csv:
-    #         report = Report(email=email, scan=scan, output='csv',
-    #                         asset_groups=report_result.asset_groups,
-    #                         tags=report_result.tags)
-    #         report_list.append(report)
-    #     if report_result.output_pdf:
-    #         report = Report(email=email, scan=scan, output='pdf',
-    #                         asset_groups=report_result.asset_groups,
-    #                         tags=report_result.tags)
-    #         report_list.append(report)
     for report in scheduled_reports:
         email = Email(recipients=report.get('email_list'),
                       subject=report.get('email_subject'))
@@ -184,8 +153,6 @@ def main():
     finally:
         qc.logout(session)
 
-    # Close out the db
-    # db_session.close()
-    # engine.dispose()
+
 if __name__ == "__main__":
     main()

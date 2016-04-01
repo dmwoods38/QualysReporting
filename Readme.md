@@ -89,7 +89,6 @@ The privileges that I have found that work are the following:
 Settings are stored in config/settings.py. For an example take a look at the
 settings-example.py file in the config folder.
 
-* DATABASE - Database configurations here.
 * QualysAPI - Qualys settings here
   * username - username of the user who will retrieve reports.
   * password - password of the user who will retrieve reports.
@@ -152,15 +151,10 @@ easier to setup I can definitely provide instructions.
 
 # Requirements
 ## Python Packages
-* SQLAlchemy
 * Requests
-* Psycopg2
 * Elasticsearch
 
 ## Other requirements
-* Postgresql
-* libpq-dev for psycopg2
-* python-dev for psycopg2
 * pip to install python packages
 
 

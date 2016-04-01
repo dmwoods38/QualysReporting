@@ -2,14 +2,6 @@ __author__ = 'dmwoods38'
 
 debug = False
 
-DATABASE = {
-    'db_type': 'postgresql',
-    'db_name': 'qualysguard',
-    'db_user': 'postgres',
-    'db_pass': 'qgpostgres',
-    'db_server': 'localhost'
-}
-
 # scan_template - template id for a scan report template that has similar
 #                 settings to the Quick Actions report.
 QualysAPI = {
