@@ -9,12 +9,13 @@ import qgreports.controllers
 import qgreports.elasticsearch_connector as es_connector
 import datetime
 import traceback
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import or_
+import json
+# from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import or_
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
-from qgreports.models import QGReport, QGEmail, QGScan
+# from qgreports.models import QGReport, QGEmail, QGScan
 from qgreports.objects import Scan, Email, Report
 __author__ = "dmwoods38"
 
@@ -26,6 +27,8 @@ email_from = qgreports.config.settings.email_from
 smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
+report_config = os.getcwd() + '/qgreports/config/reports.json'
+
 if 'add_timestamp' in qgreports.config.settings.__dict__:
     add_timestamp = qgreports.config.settings.add_timestamp
 else:
@@ -60,7 +63,6 @@ def send_emails(reports):
             msg = build_email(report.report_filename.replace("\\", ""),
                               report.email.subject, report.email.recipients)
             server.sendmail(email_from, msg.get_all('To'), msg.as_string())
-            # os.system("mv " + report.report_filename + " " + archive_folder)
             os.rename(report.report_filename, archive_folder +
                                      report.report_filename.rsplit('/')[-1])
             report.report_filename = archive_folder + \
@@ -70,41 +72,63 @@ def send_emails(reports):
 
 def main():
     # Set up DB connection
-    engine = qgreports.models.db_init()
-    Session = sessionmaker(bind=engine)
-    db_session = Session()
+    # engine = qgreports.models.db_init()
+    # Session = sessionmaker(bind=engine)
+    # db_session = Session()
 
     # Get today's reports
-    scheduled_reports = db_session.query(QGEmail,
-                                      QGScan,
-                                      QGReport).join(QGReport).join(QGScan)
-    scheduled_reports = scheduled_reports.filter(
-        or_(QGReport.day_of_month == datetime.date.today().day,
-            QGReport.day_of_week == datetime.date.today().weekday()))
-    if scheduled_reports.count() == 0:
+    # scheduled_reports = db_session.query(QGEmail,
+    #                                   QGScan,
+    #                                   QGReport).join(QGReport).join(QGScan)
+    # scheduled_reports = scheduled_reports.filter(
+    #     or_(QGReport.day_of_month == datetime.date.today().day,
+    #         QGReport.day_of_week == datetime.date.today().weekday()))
+    with open(report_config) as f:
+        report_entries = json.load(f)
+    scheduled_reports = []
+    for report in report_entries:
+        if report.get('day_of_month') == str(datetime.date.today().day):
+            scheduled_reports.append(report)
+        elif report.get('day_of_week') == str(datetime.date.today().weekday()):
+            scheduled_reports.append(report)
+
+    # if scheduled_reports.count() == 0:
+    if len(scheduled_reports) == 0:
         if debug:
             print "There were no scheduled reports on: " + \
                   datetime.date.today().__str__()
-        db_session.close()
-        engine.dispose()
         sys.exit()
     report_list = []
     # Parse the scheduled_reports into objects for easier manipulation.
-    for row in scheduled_reports:
-        report_result = row[2]
-        email = Email(recipients=row[0].email_list,
-                      subject=report_result.email_subject)
-        scan = Scan(scan_name=row[1].scan_title)
-        if report_result.output_csv:
-            report = Report(email=email, scan=scan, output='csv',
-                            asset_groups=report_result.asset_groups,
-                            tags=report_result.tags)
-            report_list.append(report)
-        if report_result.output_pdf:
-            report = Report(email=email, scan=scan, output='pdf',
-                            asset_groups=report_result.asset_groups,
-                            tags=report_result.tags)
-            report_list.append(report)
+    # for row in scheduled_reports:
+    #     report_result = row[2]
+    #     email = Email(recipients=row[0].email_list,
+    #                   subject=report_result.email_subject)
+    #     scan = Scan(scan_name=row[1].scan_title)
+    #     if report_result.output_csv:
+    #         report = Report(email=email, scan=scan, output='csv',
+    #                         asset_groups=report_result.asset_groups,
+    #                         tags=report_result.tags)
+    #         report_list.append(report)
+    #     if report_result.output_pdf:
+    #         report = Report(email=email, scan=scan, output='pdf',
+    #                         asset_groups=report_result.asset_groups,
+    #                         tags=report_result.tags)
+    #         report_list.append(report)
+    for report in scheduled_reports:
+        email = Email(recipients=report.get('email_list'),
+                      subject=report.get('email_subject'))
+        scan = Scan(scan_name=report.get('scan_title'))
+        if bool(report.get('output_csv')):
+            r = Report(email=email, scan=scan, output='csv',
+                            asset_groups=report.get('asset_groups'),
+                            tags=report.get('tags'))
+            report_list.append(r)
+        if bool(report.get('output_pdf')):
+            r = Report(email=email, scan=scan, output='pdf',
+                            asset_groups=report.get('asset_groups'),
+                            tags=report.get('tags'))
+            report_list.append(r)
 
     session = qc.login(user, password)
     try:
@@ -161,7 +185,7 @@ def main():
         qc.logout(session)
 
     # Close out the db
-    db_session.close()
-    engine.dispose()
+    # db_session.close()
+    # engine.dispose()
 if __name__ == "__main__":
     main()
