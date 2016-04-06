@@ -253,8 +253,8 @@ def get_reports(scheduled_reports, session, add_timestamp=True,
         if report.report_id is None:
             continue
         params.update({"id": report.report_id})
-        report_name = ''.join(c for c in report.email.subject if c.isalnum()
-                              or c in keepcharacters)
+        report_name = ''.join(c for c in report.email.subject if c.isalnum() or
+                              c in keepcharacters)
         report_name = report_name.replace('/', '_') + report_suffix
 
         filetype = '.' + report.output
@@ -295,3 +295,12 @@ def get_scan_results(scans_with_refs, session, scans_with_files,
         with open("/root/unprocessed.log", "a") as f:
             f.write("Unprocessed for " + datetime.date.today().__str__())
             f.write(str(unprocessed))
+
+
+def get_pci_share_status(session, scan_id, merchant_username, params=None):
+    if params is None:
+        params = {}
+    params.update({'action': 'status', 'scan_ref': scan_id,
+                   'merchant_username': merchant_username})
+    dest_url = '/api/2.0/fo/scan/pci'
+    return request(params, session, dest_url)
