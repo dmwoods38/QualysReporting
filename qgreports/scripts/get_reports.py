@@ -8,6 +8,7 @@ import qgreports.elasticsearch_connector as es_connector
 import datetime
 import traceback
 import json
+import logging
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
@@ -24,6 +25,10 @@ smtp_server = qgreports.config.settings.smtp_server
 debug = qgreports.config.settings.debug
 destination = qgreports.config.settings.destination
 report_config = os.path.dirname(qgreports.config.__file__) + '/reports.json'
+
+logging.config.fileConfig(os.path.join(os.path.dirname(qgreports.config.__file__),
+                          'logging_config.ini')  
+logger = logging.getLogger()
 
 if 'add_timestamp' in qgreports.config.settings.__dict__:
     add_timestamp = qgreports.config.settings.add_timestamp
@@ -52,7 +57,7 @@ def build_email(report, subject, recipients):
 
 def send_emails(reports):
     server = smtplib.SMTP(smtp_server)
-    print "Sending emails..."
+    logger.info('Sending emails...')
 
     for report in reports:
         if report.report_filename is not None:
@@ -79,9 +84,7 @@ def main():
 
     # if scheduled_reports.count() == 0:
     if len(scheduled_reports) == 0:
-        if debug:
-            print "There were no scheduled reports on: " + \
-                  datetime.date.today().__str__()
+        logger.info('There were no scheduled reports today')
         sys.exit()
     report_list = []
     for report in scheduled_reports:
@@ -107,7 +110,7 @@ def main():
 
         # wait for reports to complete save API calls..
         wait = 120
-        print "Waiting " + str(wait) + " seconds for reports to complete..."
+        logger.info('Waiting ' + str(wait) + ' seconds for reports to complete...')
         time.sleep(wait)
         qc.check_report_status(report_list, session)
         unfinished_reports = []
@@ -119,9 +122,9 @@ def main():
                 unfinished_reports.append(report)
 
         while len(unfinished_reports):
-            print "Waiting for unfinished reports..."
+            logger.info('Waiting for unfinished reports...')
             time.sleep(180)
-            print "Checking report status again..."
+            logger.info('Checking report status again...')
             qc.check_report_status(unfinished_reports, session)
             for report in unfinished_reports:
                 if report.report_status.lower() == 'finished':
@@ -137,9 +140,9 @@ def main():
         if destination == "email":
             send_emails(report_list)
         elif destination == "local":
-            print "Reports saved locally in: " + report_folder
+            logger.info('Reports saved locally in: ' + report_folder)
         elif destination == "elasticsearch":
-            print "Putting scan results into elasticsearch"
+            logger.info('Putting scan results into elasticsearch')
             # Initialize elasticsearch mappings
             es = es_connector.initialize_es()
             for report in report_list:
