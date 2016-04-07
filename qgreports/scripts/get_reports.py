@@ -8,7 +8,7 @@ import qgreports.elasticsearch_connector as es_connector
 import datetime
 import traceback
 import json
-import logging
+import logging.config
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email import encoders
