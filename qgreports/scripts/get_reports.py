@@ -27,7 +27,7 @@ destination = qgreports.config.settings.destination
 report_config = os.path.dirname(qgreports.config.__file__) + '/reports.json'
 
 logging.config.fileConfig(os.path.join(os.path.dirname(qgreports.config.__file__),
-                          'logging_config.ini')  
+                          'logging_config.ini'))  
 logger = logging.getLogger()
 
 if 'add_timestamp' in qgreports.config.settings.__dict__:
