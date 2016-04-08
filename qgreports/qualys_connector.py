@@ -6,6 +6,7 @@ import time
 import subprocess
 import qgreports.config.settings
 import certifi
+import logging.config
 
 __author__ = "dmwoods38"
 qualys_api_url = qgreports.config.settings.QualysAPI['url']
@@ -13,6 +14,10 @@ xreq_header = {"X-Requested-With": "Python"}
 session_path = "/api/2.0/fo/session/"		
 debug = qgreports.config.settings.debug
 
+#init logger
+logging.config.fileConfig(os.path.join(os.path.dirname(qgreports.config.__file__),
+                          'logging_config.ini'))  
+logger = logging.getLogger()
 
 # Params: Strings for username and password
 # Optional headers to include with login request
@@ -25,12 +30,12 @@ def login(username, password, headers=xreq_header, params=None):
     r = requests.Session()
     s = request(params, r, session_path, headers=headers, verb="post")
     if check_status(s):
-        print "Successfully logged in"
+        logger.info('Successfully logged in')
         return r
     else:
-        print "There was an error logging you in"
+        logger.info('There was an error logging you in')
         if debug:
-            print s.text
+            logger.info(s.text)
 
 
 # Params: Session to logout of 
@@ -41,9 +46,9 @@ def logout(session, headers=xreq_header, params=None):
     params.update({"action": "logout"})
     s = request(params, session, session_path, headers=headers, verb="post")
     if check_status(s):
-        print "Successfully logged out"
+        logger.info('Successfully logged out')
     else:
-        print "There was an error logging you out"
+        logger.info('There was an error logging you out')
 
 
 # Params: Takes in a Response object
@@ -52,8 +57,8 @@ def check_status(response):
     if response.status_code == 200:
         return True
     else:
-        print "Error with the request"
-        print "Status code: " + str(response.status_code)
+        logger.info('Error with the request')
+        logger.info('Status code: ' + str(response.status_code))
         return False
 
 
@@ -62,10 +67,10 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
                 data=""):
     # sleep for rate limiting
     time.sleep(3)
-    if debug:
-        print "HTTP Verb" + verb
-        print "URL: " + qualys_api_url+dest_url
-        print "Params: " + str(params)
+    logger.info('HTTP Verb' + verb)
+    logger.info('URL: ' + qualys_api_url+dest_url)
+    logger.info('Params: ' + str(params))
+    
     try:
         if verb.upper() == 'GET':
             s = session.get(qualys_api_url+dest_url, params=params,
@@ -75,17 +80,16 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
                              headers=headers, data=data,
                              verify=certifi.where())
         else:
-            print "Unsupported HTTP verb: " + verb
+            logger.info('Unsupported HTTP verb: ' + verb)
             sys.exit(2)
-        if debug:
-            print "status_code: " + str(s.status_code)
+        logger.debug('status_code: " + str(s.status_code)
     except Exception as e:
-        print e
-        print "Retrying..."
+        logger.info(e)
+        logger.info('Retrying...')
         try:
             s = session.post(qualys_api_url+dest_url, params=params, headers=headers, data=data)
         except Exception as e:
-            print e
+            logger.info(e)
             sys.exit(2)
     return s
 
@@ -100,7 +104,7 @@ def get_scans(session, params=None):
     if check_status(response):
         return response.text
     else:
-        print "Error retrieving scan list"
+        logger.info('Error retrieving scan list')
         sys.exit(2)
 
 
@@ -125,9 +129,8 @@ def get_scan_refs(scans, session, params=None, scans_list=None):
             else:
                 scan.scan_state = 'unprocessed'
                 scan.scan_id = node.find("./REF").text
-        if debug:
-            print "Scan state: " + scan.scan_state
-            print "Scan name: " + scan_name
+        logger.debug('Scan state: ' + scan.scan_state)
+        logger.info('Scan name: ' + scan_name)
 
 
 def get_asset_group_ips(scheduled_reports, session, params=None):
@@ -151,6 +154,7 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
                 # check
                 if asset_group_xml.find("./TITLE").text == asset_group:
                     ip_set_xml = asset_group_xml.find(ips_xpath)
+                    #WARNING - second if inside for - is using continue possible?
                     if report.asset_ips != '' and report.asset_ips is not None:
                         report.asset_ips += ','
                     if report.asset_ips is None:
@@ -160,7 +164,7 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
         if (report.asset_ips == '' or report.asset_ips is None) and \
                 (report.asset_groups != '' and
                          report.asset_groups is not None):
-            print "No ips found for: " + report.asset_groups
+            logger.info('No ips found for: ' + report.asset_groups)
 
 
 # TODO: Add support for reports with multiple scan refs.
@@ -179,6 +183,7 @@ def launch_scan_reports(scheduled_reports, session, params=None):
 
     for report in scheduled_reports:
         if report.scan.scan_state.lower() == 'processed':
+            #WARNING - second if inside for - is using continue possible?
             if 'ip_restriction' in params:
                 del params['ip_restriction']
             if report.asset_ips is not None and report.asset_ips != "":
@@ -190,8 +195,7 @@ def launch_scan_reports(scheduled_reports, session, params=None):
             response = request(params, session, dest_url)
             report_xml = ET.fromstring(response.text.encode('utf8', 'ignore'))
             while max_report_string in report_xml.find(max_num_xpath).text:
-                if debug:
-                    print "Max reports running already. Waiting 2 min..."
+                logger.debug('Max reports running already. Waiting 2 min...')
                 time.sleep(120)
                 response = request(params, session, dest_url)
                 report_xml = ET.fromstring(response.text.encode('utf8',
@@ -202,7 +206,7 @@ def launch_scan_reports(scheduled_reports, session, params=None):
                     report.report_id = item.find("./VALUE").text
                     break
             if debug:
-                print response.text
+                logger.info(response.text)
         else:
             with open(qgreports.config.settings.unprocessed_log, "a") as f:
                 f.write("Unprocessed for " + datetime.date.today().__str__())
@@ -225,13 +229,14 @@ def check_report_status(scheduled_reports, session):
         for report_xml in report_list_xml.findall(report_xpath):
             if report_xml.find("./ID").text == report.report_id:
                 state = report_xml.find("./STATUS/STATE").text
+                #WARNING - second if inside for - is using continue possible?
                 if state == "Finished":
                     report.report_status = 'Finished'
                 elif state == "Running" or state == "Submitted":
                     report.report_status = 'Unfinished'
                 else:
-                    print "The report won't complete"
-                    print "Report status: " + state
+                    logger.info('The report won't complete')
+                    logger.info('Report status: ' + state)
                     sys.exit(2)
 
 
