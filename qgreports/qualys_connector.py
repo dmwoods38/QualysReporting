@@ -1,3 +1,4 @@
+import os
 import requests
 import sys
 import xml.etree.ElementTree as ET
