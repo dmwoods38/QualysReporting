@@ -234,7 +234,7 @@ def check_report_status(scheduled_reports, session):
                 elif state == "Running" or state == "Submitted":
                     report.report_status = 'Unfinished'
                 else:
-                    logger.info('The report won't complete')
+                    logger.info('The report will not complete')
                     logger.info('Report status: ' + state)
                     sys.exit(2)
 
