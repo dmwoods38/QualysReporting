@@ -67,9 +67,9 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
                 data=""):
     # sleep for rate limiting
     time.sleep(3)
-    logger.info('HTTP Verb' + verb)
-    logger.info('URL: ' + qualys_api_url+dest_url)
-    logger.info('Params: ' + str(params))
+    logger.debug('HTTP Verb' + verb)
+    logger.debug('URL: ' + qualys_api_url+dest_url)
+    logger.debug('Params: ' + str(params))
     
     try:
         if verb.upper() == 'GET':
@@ -82,7 +82,7 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
         else:
             logger.info('Unsupported HTTP verb: ' + verb)
             sys.exit(2)
-        logger.debug('status_code: " + str(s.status_code)
+        logger.debug('status_code: ' + str(s.status_code))
     except Exception as e:
         logger.info(e)
         logger.info('Retrying...')
@@ -130,7 +130,7 @@ def get_scan_refs(scans, session, params=None, scans_list=None):
                 scan.scan_state = 'unprocessed'
                 scan.scan_id = node.find("./REF").text
         logger.debug('Scan state: ' + scan.scan_state)
-        logger.info('Scan name: ' + scan_name)
+        logger.debug('Scan name: ' + scan_name)
 
 
 def get_asset_group_ips(scheduled_reports, session, params=None):
@@ -205,8 +205,7 @@ def launch_scan_reports(scheduled_reports, session, params=None):
                 if item.find("./KEY").text.upper() == "ID":
                     report.report_id = item.find("./VALUE").text
                     break
-            if debug:
-                logger.info(response.text)
+            logger.debug(response.text)
         else:
             with open(qgreports.config.settings.unprocessed_log, "a") as f:
                 f.write("Unprocessed for " + datetime.date.today().__str__())
