@@ -12,8 +12,7 @@ import logging.config
 __author__ = "dmwoods38"
 qualys_api_url = qgreports.config.settings.QualysAPI['url']
 xreq_header = {"X-Requested-With": "Python"}
-session_path = "/api/2.0/fo/session/"		
-debug = qgreports.config.settings.debug
+session_path = "/api/2.0/fo/session/"
 
 #init logger
 logging.config.fileConfig(os.path.join(os.path.dirname(qgreports.config.__file__),
@@ -35,8 +34,7 @@ def login(username, password, headers=xreq_header, params=None):
         return r
     else:
         logger.info('There was an error logging you in')
-        if debug:
-            logger.info(s.text)
+        logger.debug(s.text)
 
 
 # Params: Session to logout of 
