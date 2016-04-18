@@ -251,7 +251,7 @@ def get_reports(scheduled_reports, session, add_timestamp=True,
     else:
         report_suffix = ''
     keepcharacters = (' ', '.', '_', '/', '-')
-    print "Trying to get reports..."
+    logger.info('Trying to get reports...')
     for report in scheduled_reports:
         if report.report_id is None:
             continue
