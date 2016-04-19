@@ -6,9 +6,9 @@
     "option_profile_id": "366968",
     "day_of_month": "22",
     "time_zone_code": "US-CA",
-    'observe_dst': 'yes',
-    'start_hour': '14',
-    'start_minute': '0'
+    "observe_dst": "yes",
+    "start_hour": "14",
+    "start_minute": "0"
   },
   {
     "ips": "82.109.255.206,",
@@ -17,9 +17,9 @@
     "option_profile_id": "366968",
     "day_of_month": "22",
     "time_zone_code": "US-CA",
-    'observe_dst': 'yes',
-    'start_hour': '14',
-    'start_minute': '0'
+    "observe_dst": "yes",
+    "start_hour": "14",
+    "start_minute": "0"
   },
   {
     "ips": "10.249.0.0-10.249.31.254",
@@ -28,8 +28,8 @@
     "option_profile_id": "366968",
     "day_of_month": "22",
     "time_zone_code": "US-CA",
-    'observe_dst': 'yes',
-    'start_hour': '14',
-    'start_minute': '0'
+    "observe_dst": "yes",
+    "start_hour": "14",
+    "start_minute": "0"
   }
 ]
