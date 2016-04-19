@@ -35,9 +35,8 @@ def main():
             logger.info('Unable to add IPs')
             logger.debug('Unable to add IPs: %s\n' % res)
         if "IPs successfully added to Vulnerability Management" in res:
-        logger.info('IPs have been added')
-        logger.debug('IPs have been added: %s\n' % res)
-
+            logger.info('IPs have been added')
+            logger.debug('IPs have been added: %s\n' % res)
 
     except Exception as e:
         traceback.print_exc()
