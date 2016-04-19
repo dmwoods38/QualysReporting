@@ -57,7 +57,7 @@ def check_status(response):
         return True
     else:
         logger.info('Error with the request')
-        logger.info('Status code: ' + str(response.status_code))
+        logger.info('Status code: %s' % response.status_code)
         return False
 
 
@@ -66,27 +66,27 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
                 data=""):
     # sleep for rate limiting
     time.sleep(3)
-    logger.debug('HTTP Verb' + verb)
-    logger.debug('URL: ' + qualys_api_url+dest_url)
-    logger.debug('Params: ' + str(params))
+    logger.debug('HTTP Verb %s' % verb)
+    logger.debug('URL: %s%s' % (qualys_api_url, dest_url))
+    logger.debug('Params: %s' % params)
     
     try:
         if verb.upper() == 'GET':
-            s = session.get(qualys_api_url+dest_url, params=params,
+            s = session.get("%s%s" % (qualys_api_url, dest_url), params=params,
                             headers=headers, verify=certifi.where())
         elif verb.upper() == 'POST':
-            s = session.post(qualys_api_url+dest_url, params=params,
+            s = session.post("%s%s" % (qualys_api_url, dest_url), params=params,
                              headers=headers, data=data,
                              verify=certifi.where())
         else:
-            logger.info('Unsupported HTTP verb: ' + verb)
+            logger.info('Unsupported HTTP verb: %s' % verb)
             sys.exit(2)
-        logger.debug('status_code: ' + str(s.status_code))
+        logger.debug('status_code: %s' % s.status_code)
     except Exception as e:
         logger.info(e)
         logger.info('Retrying...')
         try:
-            s = session.post(qualys_api_url+dest_url, params=params, headers=headers, data=data)
+            s = session.post("%s%s" % (qualys_api_url, dest_url), params=params, headers=headers, data=data)
         except Exception as e:
             logger.info(e)
             sys.exit(2)
@@ -99,6 +99,45 @@ def get_scans(session, params=None):
         params = {}
     params.update({"action": "list"})
     dest_url = "/api/2.0/fo/scan/"
+    response = request(params, session, dest_url)
+    if check_status(response):
+        return response.text
+    else:
+        logger.info('Error retrieving scan list')
+        sys.exit(2)
+
+
+def add_ips(session, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "add", "enable_vm": "1"})
+    dest_url = "/api/2.0/fo/asset/ip/"
+    response = request(params, session, dest_url)
+    if check_status(response):
+        return response.text
+    else:
+        logger.info('Error retrieving scan list')
+        sys.exit(2)
+
+
+def add_asset_group(session, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "add"})
+    dest_url = "/api/2.0/fo/asset/group/"
+    response = request(params, session, dest_url)
+    if check_status(response):
+        return response.text
+    else:
+        logger.info('Error retrieving scan list')
+        sys.exit(2)
+
+
+def schedule_scan(session, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "create", "active": "1"})
+    dest_url = "/api/2.0/fo/schedule/scan/"
     response = request(params, session, dest_url)
     if check_status(response):
         return response.text
