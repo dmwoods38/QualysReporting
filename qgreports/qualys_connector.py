@@ -112,6 +112,7 @@ def add_ips(session, params=None):
         params = {}
     params.update({"enable_vm": "1", "action": "add"})
     dest_url = "/api/2.0/fo/asset/ip/"
+    logger.debug(params)
     response = request(params, session, dest_url, data=params)
     if check_status(response):
         return response.text
