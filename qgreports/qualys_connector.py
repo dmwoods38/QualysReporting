@@ -117,7 +117,7 @@ def add_ips(session, params=None):
     if check_status(response):
         return response.text
     else:
-        logger.info('Error retrieving scan list')
+        logger.info('Error adding IPs')
         sys.exit(2)
 
 
@@ -130,7 +130,7 @@ def add_asset_group(session, params=None):
     if check_status(response):
         return response.text
     else:
-        logger.info('Error retrieving scan list')
+        logger.info('Error adding asset group')
         sys.exit(2)
 
 
@@ -143,7 +143,7 @@ def schedule_scan(session, params=None):
     if check_status(response):
         return response.text
     else:
-        logger.info('Error retrieving scan list')
+        logger.info('Error adding scheduled scan')
         sys.exit(2)
 
 
