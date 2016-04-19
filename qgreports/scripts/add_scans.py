@@ -55,7 +55,10 @@ def main():
                     logger.debug('Asset Group successfully added: %s\n' % res)
 
             if "scan_title" in entry:
-                res = qc.schedule_scan(session, {"scan_title": entry['scan_title'], 'active': '1', 'option_id': '366968', 'occurrence': 'monthly', 'frequency_months': '1','day_of_month': '22','asset_groups': entry['asset_group_title']})
+                res = qc.schedule_scan(session, {'scan_title': entry['scan_title'], 'active': '1', 'option_id': '366968',
+                                                 'occurrence': 'monthly', 'frequency_months': '1','day_of_month': '22',
+                                                 'time_zone_code': 'US-CA', 'observe_dst': 'yes', 'start_hour': '14',
+                                                 'start_minute': '0','asset_groups': entry['asset_group_title']})
                 if "New scan scheduled successfully" not in res:
                     logger.info('Unable to add new scan')
                     logger.debug('Unable to add new scan: %s\n' % res)
