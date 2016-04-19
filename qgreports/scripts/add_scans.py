@@ -46,7 +46,7 @@ def main():
         try:
 
             if "asset_group_title" in entry:
-                res = qc.add_asset_group(session, {"title": entry['asset_group_title']})
+                res = qc.add_asset_group(session, {"title": entry['asset_group_title'], 'ips': entry['ips']})
                 if "Asset Group successfully added." not in res:
                     logger.info('Unable to add Asset Group')
                     logger.debug('Unable to add Asset Group: %s\n' % res)
@@ -55,8 +55,8 @@ def main():
                     logger.debug('Asset Group successfully added: %s\n' % res)
 
             if "scan_title" in entry:
-                res = qc.schedule_scan(session, {'scan_title': entry['scan_title'], 'active': '1', 'option_id': '366968',
-                                                 'occurrence': 'monthly', 'frequency_months': '1','day_of_month': '22',
+                res = qc.schedule_scan(session, {'scan_title': entry['scan_title'], 'active': '1', 'option_id': entry['option_profile_id'],
+                                                 'occurrence': 'monthly', 'frequency_months': '1','day_of_month': entry['day_of_month'],
                                                  'time_zone_code': 'US-CA', 'observe_dst': 'yes', 'start_hour': '14',
                                                  'start_minute': '0','asset_groups': entry['asset_group_title']})
                 if "New scan scheduled successfully" not in res:
