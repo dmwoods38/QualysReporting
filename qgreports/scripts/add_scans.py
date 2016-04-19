@@ -25,11 +25,11 @@ def main():
     session = qc.login(user, password)
 
     try:
-        res = qc.add_ips({
+        res = qc.add_ips(session, {
             "ips": ",".join(list(
                 [str(scan['ips']).strip(",").strip() for scan in scan_entries if "ips" in scan]
             ))
-        }, session)
+        })
 
         if "IPs successfully added to Vulnerability Management" not in res:
             logger.info('Unable to add IP')
@@ -41,13 +41,13 @@ def main():
     for entry in scan_entries:
         try:
             if "asset_group_title" in entry:
-                res = qc.add_asset_group({"title": entry['asset_group_title']}, session)
+                res = qc.add_asset_group(session, {"title": entry['asset_group_title']})
                 if "#####" not in res:
                     logger.info('Unable to add Asset Group')
                     logger.debug('Unable to add Asset Group: %s\n' % res)
 
             if "scan_title" in entry:
-                res = qc.schedule_scan({"scan_title": entry['scan_title']}, session)
+                res = qc.schedule_scan(session, {"scan_title": entry['scan_title']})
                 if "#####" not in res:
                     logger.info('Unable to Schedule Scan')
                     logger.debug('Unable to Schedule Scan: %s\n' % res)
