@@ -32,19 +32,29 @@ def main():
         })
 
         if "IPs successfully added to Vulnerability Management" not in res:
-            logger.info('Unable to add IP')
-            logger.debug('Unable to add IP: %s\n' % res)
+            logger.info('Unable to add IPs')
+            logger.debug('Unable to add IPs: %s\n' % res)
+        if "IPs successfully added to Vulnerability Management" in res:
+        logger.info('IPs have been added')
+        logger.debug('IPs have been added: %s\n' % res)
+
+
     except Exception as e:
         traceback.print_exc()
         sys.exit(2)
 
     for entry in scan_entries:
         try:
+
             if "asset_group_title" in entry:
                 res = qc.add_asset_group(session, {"title": entry['asset_group_title']})
-                if "#####" not in res:
+                if "Asset Group successfully added." not in res:
                     logger.info('Unable to add Asset Group')
                     logger.debug('Unable to add Asset Group: %s\n' % res)
+
+            if "Asset Group successfully added." in res:
+                logger.info('Asset Group successfully added')
+                logger.debug('Asset Group successfully added: %s\n' % res)
 
             if "scan_title" in entry:
                 res = qc.schedule_scan(session, {"scan_title": entry['scan_title']})
