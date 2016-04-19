@@ -110,9 +110,9 @@ def get_scans(session, params=None):
 def add_ips(session, params=None):
     if params is None:
         params = {}
-    params.update({"enable_vm": "1"})
-    dest_url = "/api/2.0/fo/asset/ip/?action=add"
-    response = request(params, session, dest_url)
+    params.update({"enable_vm": "1", "action": "add"})
+    dest_url = "/api/2.0/fo/asset/ip/"
+    response = request(params, session, dest_url, data=params)
     if check_status(response):
         return response.text
     else:
