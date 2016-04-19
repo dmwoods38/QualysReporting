@@ -50,16 +50,18 @@ def main():
                 if "Asset Group successfully added." not in res:
                     logger.info('Unable to add Asset Group')
                     logger.debug('Unable to add Asset Group: %s\n' % res)
-
-            if "Asset Group successfully added." in res:
-                logger.info('Asset Group successfully added')
-                logger.debug('Asset Group successfully added: %s\n' % res)
+                if "Asset Group successfully added." in res:
+                    logger.info('Asset Group successfully added')
+                    logger.debug('Asset Group successfully added: %s\n' % res)
 
             if "scan_title" in entry:
                 res = qc.schedule_scan(session, {"scan_title": entry['scan_title']})
-                if "#####" not in res:
-                    logger.info('Unable to Schedule Scan')
-                    logger.debug('Unable to Schedule Scan: %s\n' % res)
+                if "New scan scheduled successfully" not in res:
+                    logger.info('Unable to add new scan')
+                    logger.debug('Unable to add new scan: %s\n' % res)
+                if "New scan scheduled successfully" in res:
+                    logger.info('New scan scheduled successfully')
+                    logger.debug('New scan scheduled successfully: %s\n' % res)
 
         except Exception as e:
             traceback.print_exc()
