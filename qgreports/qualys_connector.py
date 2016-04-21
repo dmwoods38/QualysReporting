@@ -145,7 +145,7 @@ def schedule_scan(session, params=None):
         return response.text
     else:
         logger.info('Error adding scheduled scan')
-        sys.exit(2)
+        return response.text
 
 
 # Takes and updates scan objects.
