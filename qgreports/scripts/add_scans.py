@@ -47,6 +47,10 @@ def main():
 
             if "asset_group_title" in entry:
                 res = qc.add_asset_group(session, {"title": entry['asset_group_title'], "ips": entry['ips']})
+                if "already exists. Please use a different title" in res:
+                    logger.info('An asset group with that title already exists')
+                    logger.debug('An asset group with that title already exists: %s\n' % res)
+                    continue
                 if "Asset Group successfully added." not in res:
                     logger.info('Unable to add Asset Group')
                     logger.debug('Unable to add Asset Group: %s\n' % res)
