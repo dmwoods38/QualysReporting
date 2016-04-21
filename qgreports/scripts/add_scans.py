@@ -50,8 +50,7 @@ def main():
                 if "already exists. Please use a different title" in res:
                     logger.info('An asset group with that title already exists')
                     logger.debug('An asset group with that title already exists: %s\n' % res)
-                    continue
-                if "Asset Group successfully added." not in res:
+                if "Asset Group successfully added." not in res and "already exists. Please use a different title" not in res:
                     logger.info('Unable to add Asset Group')
                     logger.debug('Unable to add Asset Group: %s\n' % res)
                 if "Asset Group successfully added." in res:
