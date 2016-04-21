@@ -58,6 +58,7 @@ def check_status(response):
     else:
         logger.info('Error with the request')
         logger.info('Status code: %s' % response.status_code)
+        logger.debug('Error with the request: %s\n' % res)
         return False
 
 
