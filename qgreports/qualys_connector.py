@@ -56,8 +56,6 @@ def check_status(response):
     if response.status_code == 200:
         return True
     else:
-        logger.info('Error with the request')
-        logger.info('Status code: %s' % response.status_code)
         logger.debug('Error with the request: %s\n' % response.text)
         return False
 
@@ -118,7 +116,7 @@ def add_ips(session, params=None):
     if check_status(response):
         return response.text
     else:
-        logger.info('Error adding IPs')
+        logger.debug('Error adding IPs')
         sys.exit(2)
 
 
@@ -131,7 +129,7 @@ def add_asset_group(session, params=None):
     if check_status(response):
         return response.text
     else:
-        logger.info('Error adding asset group')
+        logger.debug('Error adding asset group')
         sys.exit(2)
 
 
@@ -144,7 +142,7 @@ def schedule_scan(session, params=None):
     if check_status(response):
         return response.text
     else:
-        logger.info('Error adding scheduled scan')
+        logger.debug('Error adding scheduled scan')
         return response.text
 
 
