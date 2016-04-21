@@ -63,8 +63,8 @@ def main():
                                                  "time_zone_code": "US-CA", "observe_dst": "yes", "start_hour": "14",
                                                  "start_minute": "0","asset_groups": entry['asset_group_title']})
                 if "exists" in res:
-                    logger.info('An scan with that title already exists')
-                    logger.debug('An scan with that title already exists: %s\n' % res)
+                    logger.info('A scan with that title already exists')
+                    logger.debug('A scan with that title already exists: %s\n' % res)
                 if "New scan scheduled successfully" not in res  and "exists" not in res:
                     logger.info('Unable to add new scan')
                     logger.debug('Unable to add new scan: %s\n' % res)
