@@ -48,7 +48,7 @@ def main():
             if "asset_group_title" in entry:
                 res = qc.add_asset_group(session, {"title": entry['asset_group_title'], "ips": entry['ips']})
                 if "exists" in res:
-                    logger.info('Asset group already exists: %s\n' % entry['asset_group_title'])
+                    logger.info('Asset group already exists: %s' % entry['asset_group_title'])
                     logger.debug('An asset group with that title already exists: %s\n' % res)
                 if "Asset Group successfully added." not in res and "exists" not in res:
                     logger.info('Unable to add Asset Group')
@@ -63,7 +63,7 @@ def main():
                                                  "time_zone_code": "US-CA", "observe_dst": "yes", "start_hour": "14",
                                                  "start_minute": "0","asset_groups": entry['asset_group_title']})
                 if "exists" in res:
-                    logger.info('Scan already exists: %s\n' % entry['scan_title'])
+                    logger.info('Scan already exists: %s' % entry['scan_title'])
                     logger.debug('A scan with that title already exists: %s\n' % res)
                 if "New scan scheduled successfully" not in res  and "exists" not in res:
                     logger.info('Unable to add new scan')
