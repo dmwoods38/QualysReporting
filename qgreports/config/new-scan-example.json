@@ -11,7 +11,7 @@
     "start_minute": "0"
   },
   {
-    "ips": "1.2.3.4,",
+    "ips": "1.1.1.1",
     "asset_group_title": "Scheduled Scan Asset Group Test 2",
     "scan_title": "Scheduled Scan Test 2",
     "option_profile_id": "366968",
