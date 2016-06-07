@@ -36,8 +36,7 @@ def login(username, password, headers=xreq_header, params=None):
         return r
     else:
         logger.info('There was an error logging you in')
-        if debug:
-            logger.info(s.text)
+        logger.debug(s.text)
 
 
 # Params: Session to logout of 
@@ -89,9 +88,9 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
                              headers=headers, data=data,
                              verify=certifi.where())
         else:
-            logger.info('Unsupported HTTP verb: ' + verb)
+            logger.info('Unsupported HTTP verb: %s' % verb)
             sys.exit(2)
-        logger.debug('status_code: ' + str(s.status_code))
+        logger.debug('status_code: %s' % s.status_code)
     except Exception as e:
         logger.info(e)
         logger.info('Retrying...')
@@ -115,6 +114,46 @@ def get_scans(session, params=None):
     else:
         logger.info('Error retrieving scan list')
         sys.exit(2)
+
+
+def add_ips(session, params=None):
+    if params is None:
+        params = {}
+    params.update({"enable_vm": "1", "action": "add"})
+    dest_url = "/api/2.0/fo/asset/ip/"
+    logger.debug(params)
+    response = request(params, session, dest_url, data=params)
+    if check_status(response):
+        return response.text
+    else:
+        logger.debug('Error adding IPs')
+        sys.exit(2)
+
+
+def add_asset_group(session, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "add"})
+    dest_url = "/api/2.0/fo/asset/group/"
+    response = request(params, session, dest_url)
+    if check_status(response):
+        return response.text
+    else:
+        logger.debug('Error adding asset group')
+        sys.exit(2)
+
+
+def schedule_scan(session, params=None):
+    if params is None:
+        params = {}
+    params.update({"action": "create", "active": "1"})
+    dest_url = "/api/2.0/fo/schedule/scan/"
+    response = request(params, session, dest_url)
+    if check_status(response):
+        return response.text
+    else:
+        logger.debug('Error adding scheduled scan')
+        return response.text
 
 
 # Takes and updates scan objects.
@@ -261,7 +300,7 @@ def get_reports(scheduled_reports, session, add_timestamp=True,
     else:
         report_suffix = ''
     keepcharacters = (' ', '.', '_', '/', '-')
-    print "Trying to get reports..."
+    logger.info('Trying to get reports...')
     for report in scheduled_reports:
         if report.report_id is None:
             continue

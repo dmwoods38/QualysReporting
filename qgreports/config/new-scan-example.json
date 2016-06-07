@@ -1,0 +1,35 @@
+[
+  {
+    "ips": "8.8.8.8",
+    "asset_group_title": "Scheduled Scan Asset Group Test 1",
+    "scan_title": "Scheduled Scan Test 1",
+    "option_profile_id": "366968",
+    "day_of_month": "22",
+    "time_zone_code": "US-CA",
+    "observe_dst": "yes",
+    "start_hour": "14",
+    "start_minute": "0"
+  },
+  {
+    "ips": "1.1.1.1",
+    "asset_group_title": "Scheduled Scan Asset Group Test 2",
+    "scan_title": "Scheduled Scan Test 2",
+    "option_profile_id": "366968",
+    "day_of_month": "22",
+    "time_zone_code": "US-CA",
+    "observe_dst": "yes",
+    "start_hour": "14",
+    "start_minute": "0"
+  },
+  {
+    "ips": "1.2.3.4-1.2.3.234",
+    "asset_group_title": "Scheduled Scan Asset Group Test 3",
+    "scan_title": "Scheduled Scan Test 3",
+    "option_profile_id": "366968",
+    "day_of_month": "22",
+    "time_zone_code": "US-CA",
+    "observe_dst": "yes",
+    "start_hour": "14",
+    "start_minute": "0"
+  }
+]
