@@ -15,10 +15,11 @@ xreq_header = {"X-Requested-With": "Python"}
 session_path = "/api/2.0/fo/session/"		
 debug = qgreports.config.settings.debug
 
-#init logger
+# init logger
 logging.config.fileConfig(os.path.join(os.path.dirname(qgreports.config.__file__),
                           'logging_config.ini'))  
 logger = logging.getLogger()
+
 
 # Params: Strings for username and password
 # Optional headers to include with login request
@@ -63,6 +64,13 @@ def check_status(response):
         return False
 
 
+def safe_params(params):
+    safe = params.copy()
+    if 'password' in safe:
+        del safe['password']
+    return safe
+
+
 # Params
 def request(params, session, dest_url, verb='POST', headers=xreq_header,
                 data=""):
@@ -70,7 +78,7 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
     time.sleep(3)
     logger.debug('HTTP Verb' + verb)
     logger.debug('URL: ' + qualys_api_url+dest_url)
-    logger.debug('Params: ' + str(params))
+    logger.debug('Params: ' + str(safe_params(params)))
     
     try:
         if verb.upper() == 'GET':
@@ -155,7 +163,7 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
                 # check
                 if asset_group_xml.find("./TITLE").text == asset_group:
                     ip_set_xml = asset_group_xml.find(ips_xpath)
-                    #WARNING - second if inside for - is using continue possible?
+                    # WARNING - second if inside for - is using continue possible?
                     if report.asset_ips != '' and report.asset_ips is not None:
                         report.asset_ips += ','
                     if report.asset_ips is None:
@@ -309,3 +317,18 @@ def get_pci_share_status(session, scan_id, merchant_username, params=None):
                    'merchant_username': merchant_username})
     dest_url = '/api/2.0/fo/scan/pci'
     return request(params, session, dest_url)
+
+
+class QualysConnector:
+    def __init__(self):
+        pass
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            pass
+            # cleanup here, there was some error.
+
+

@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Author: Dean Woods
 # Created: 6/23/15
-# Last modified: 1/5/16
+# Last modified: 6/6/16
 # Description:
 #     This is intended to download the current scan schedule from a
 #     Qualys account. You must have a valid login with read privs in 
@@ -21,11 +21,6 @@ def print_usage():
     print "Usage: ./get_scan_schedule.py [-o outfile] [-h]"
     print "\t-o outfile: File to write schedule to in CSV format."
     print "\t-h: displays usage."
-
-
-#
-def qualys_login():
-    pass
 
 
 # Params: Strings for username and password
@@ -124,7 +119,7 @@ def parse_schedule(schedule_xml):
         try:
             ags_nodes = i.find("./ASSET_GROUP_TITLE_LIST")
             ags_nodes = ags_nodes.findall("./ASSET_GROUP_TITLE")
-            ags =  [x.text for x in ags_nodes]
+            ags = [x.text for x in ags_nodes]
         except AttributeError:
             ags = ["None"]
         sched = i.find("./SCHEDULE")
