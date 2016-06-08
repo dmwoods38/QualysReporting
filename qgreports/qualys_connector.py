@@ -4,7 +4,6 @@ import sys
 import xml.etree.ElementTree as ET
 import datetime
 import time
-import subprocess
 import qgreports.config.settings
 import certifi
 import logging.config

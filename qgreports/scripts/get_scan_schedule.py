@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Author: Dean Woods
 # Created: 6/23/15
-# Last modified: 6/6/16
+# Last modified: 6/8/16
 # Description:
 #     This is intended to download the current scan schedule from a
 #     Qualys account. You must have a valid login with read privs in 
@@ -165,20 +165,14 @@ def write_csv(filename, schedules, columns=None, sep=';'):
     f.close()
 
 
-def main():
+def get_cli_args():
+    outfile = None
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ho:")
     except getopt.GetoptError as err:
         print str(err)
         print_usage()
         sys.exit(2)
-    if __name__ == "__main__" and len(opts) < 1:
-        s = "Sorry :/ this script doesn't do anything useful right now"
-        s += " if you don't specify an outfile with -o"
-        print s
-        print_usage()
-        sys.exit()
-    outfile = None
     for o, a in opts:
         if o == '-o':
             outfile = a
@@ -187,11 +181,23 @@ def main():
             sys.exit()
         else:
             assert False, "unhandled option"
-    user = raw_input("Qualys username: ")
-    pw = getpass.getpass()
+
+    return outfile
+
+
+def main(**kwargs):
+    outfile = kwargs.get('outfile', None)
+    user = kwargs.get('username', None)
+    pw = kwargs.get('password', None)
+    if outfile is None:
+        outfile = get_cli_args()
+    if user is None:
+        user = raw_input("Qualys username: ")
+    if pw is None:
+        pw = getpass.getpass()
 
     query_params = {"action": "list", "active": "1"}
-    tree = ET.fromstring(qualys_api_request(query_params, (user,pw)).content)
+    tree = ET.fromstring(qualys_api_request(query_params, (user, pw)).content)
     schedules = parse_schedule(tree)
     if outfile is not None:
         cols = ['Scan Name', 'Address Groups', 'IPs', 'Frequency', 'Time',
