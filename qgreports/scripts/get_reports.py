@@ -154,7 +154,11 @@ def main():
         traceback.print_exc()
         sys.exit(2)
     finally:
+        # Quick crappy way to get the API usage
+        response = qc.get_scans(session)
         qc.logout(session)
+        logger.info('Number of API Requests remaining: %s' %
+                    response.headers.get('X-RateLimit-Remaining'))
 
 
 if __name__ == "__main__":
