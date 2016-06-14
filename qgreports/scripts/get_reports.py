@@ -155,7 +155,8 @@ def main():
         sys.exit(2)
     finally:
         # Quick crappy way to get the API usage
-        response = qc.get_scans(session)
+        response = qc.request(params={'action': 'list'}, session=session,
+                              dest_url='/api/2.0/fo/scan')
         qc.logout(session)
         logger.info('Number of API Requests remaining: %s' %
                     response.headers.get('X-RateLimit-Remaining'))
