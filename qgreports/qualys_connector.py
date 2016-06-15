@@ -10,6 +10,8 @@ import logging.config
 
 __author__ = "dmwoods38"
 qualys_api_url = qgreports.config.settings.QualysAPI['url']
+username = qgreports.config.settings.QualysAPI.get('username')
+password = qgreports.config.settings.QualysAPI.get('password')
 xreq_header = {"X-Requested-With": "Python"}
 session_path = "/api/2.0/fo/session/"		
 debug = qgreports.config.settings.debug
@@ -77,7 +79,7 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
     logger.debug('HTTP Verb' + verb)
     logger.debug('URL: ' + qualys_api_url+dest_url)
     logger.debug('Params: ' + str(safe_params(params)))
-    
+
     try:
         if verb.upper() == 'GET':
             s = session.get(qualys_api_url+dest_url, params=params,
@@ -229,8 +231,13 @@ def launch_scan_reports(scheduled_reports, session, params=None):
     max_report_string = "Max number of allowed reports"
 
     for report in scheduled_reports:
+        # Allow per report templates if desired.
+        if report.template_id:
+            params.update({"template_id": report.template_id})
+        # Crappy way to update the report type for map scans
+        if report.scan.is_map():
+            params.update({'report_type': 'Map'})
         if report.scan.scan_state.lower() == 'processed':
-            #WARNING - second if inside for - is using continue possible?
             if 'ip_restriction' in params:
                 del params['ip_restriction']
             if report.asset_ips is not None and report.asset_ips != "":
@@ -353,8 +360,39 @@ def get_pci_share_status(session, scan_id, merchant_username, params=None):
         params = {}
     params.update({'action': 'status', 'scan_ref': scan_id,
                    'merchant_username': merchant_username})
-    dest_url = '/api/2.0/fo/scan/pci'
+    dest_url = '/api/2.0/fo/scan/pci/'
     return request(params, session, dest_url)
+
+
+def get_map_list(username, password, params=None, headers=xreq_header):
+    if params is None:
+        params = {}
+    params.update({'last': 'yes'})
+    dest_url = '/msp/map_report_list.php'
+    r = requests.get(qualys_api_url + dest_url, params=params,
+                     auth=(username, password), headers=headers, verify=certifi.where())
+    return r
+
+
+def get_map_status(map_xml):
+    status = map_xml.get('status').lower()
+    if status == 'finished':
+        return 'processed'
+    if status == 'running':
+        return 'unprocessed'
+    else:
+        return 'ihavenoidea.jpeg'
+
+
+def get_map_refs(maps, map_xml_list=None):
+    if map_xml_list is None:
+        map_xml_list = ET.fromstring(get_map_list(username, password).text)
+    for map_xml in map_xml_list:
+        for map_entry in maps:
+            if map_entry.scan_name == map_xml.find('./TITLE').text:
+                map_entry.scan_id = map_xml.get('ref')
+                map_entry.scan_status = get_map_status(map_xml)
+                continue
 
 
 class QualysConnector:

@@ -90,27 +90,33 @@ def main():
     for report in scheduled_reports:
         email = Email(recipients=report.get('email_list'),
                       subject=report.get('email_subject'))
-        scan = Scan(scan_name=report.get('scan_title'))
+        scan = Scan(scan_name=report.get('scan_title'), is_map=report.get('is_map'))
         if report.get('output_csv') == 'True':
             r = Report(email=email, scan=scan, output='csv',
                             asset_groups=report.get('asset_groups'),
-                            tags=report.get('tags'))
+                            tags=report.get('tags'), asset_ips=report.get('asset_ips'))
             report_list.append(r)
         if report.get('output_pdf') == 'True':
             r = Report(email=email, scan=scan, output='pdf',
                             asset_groups=report.get('asset_groups'),
-                            tags=report.get('tags'))
+                            tags=report.get('tags'), asset_ips=report.get('asset_ips'))
             report_list.append(r)
 
     session = qc.login(user, password)
     try:
-        qc.get_scan_refs([x.scan for x in report_list], session)
-        qc.get_asset_group_ips(report_list, session)
-        qc.launch_scan_reports(report_list, session)
+        # Handle scan reports
+        scans = [x.scan for x in report_list if not x.scan.is_map()]
+        qc.get_scan_refs(scans, session)
+        qc.get_asset_group_ips(scans, session)
+        qc.launch_scan_reports(scans, session)
 
+        # Handle map reports
+        maps = [x.scan for x in report_list if x.scan.is_map()]
+        qc.get_map_refs(maps)
+        qc.launch_scan_reports(maps, session)
         # wait for reports to complete save API calls..
         wait = 120
-        logger.info('Waiting ' + str(wait) + ' seconds for reports to complete...')
+        logger.info('Waiting %s seconds for reports to complete...' % wait)
         time.sleep(wait)
         qc.check_report_status(report_list, session)
         unfinished_reports = []
