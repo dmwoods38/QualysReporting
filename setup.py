@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='QualysReporting',
-    version='0.2.7dev',
+    version='0.2.8dev',
     install_requires=['requests', 'certifi', 'selenium'],
     packages=find_packages(),
     package_data={'qgreports': ['config/*']},
