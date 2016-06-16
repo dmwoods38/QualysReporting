@@ -369,7 +369,6 @@ def get_pci_share_status(session, scan_id, merchant_username, params=None):
 def get_map_list(username, password, params=None, headers=xreq_header):
     if params is None:
         params = {}
-    params.update({'last': 'yes'})
     dest_url = '/msp/map_report_list.php'
     r = requests.get(qualys_api_url + dest_url, params=params,
                      auth=(username, password), headers=headers, verify=certifi.where())
@@ -388,12 +387,12 @@ def get_map_status(map_xml):
 def get_map_refs(maps, map_xml_list=None):
     if map_xml_list is None:
         map_xml_list = ET.fromstring(get_map_list(username, password).text)
-    for map_xml in map_xml_list:
-        for map_entry in maps:
+    for map_entry in maps:
+        for map_xml in map_xml_list.getchildren():
             if map_entry.scan_name == map_xml.find('./TITLE').text:
                 map_entry.scan_id = map_xml.get('ref')
                 map_entry.scan_state = get_map_status(map_xml)
-                continue
+                break
 
 
 class QualysConnector:
