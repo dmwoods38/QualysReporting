@@ -93,27 +93,27 @@ def main():
         scan = Scan(scan_name=report.get('scan_title'), is_map=report.get('is_map'))
         if report.get('output_csv') == 'True':
             r = Report(email=email, scan=scan, output='csv',
-                            asset_groups=report.get('asset_groups'),
-                            tags=report.get('tags'), asset_ips=report.get('asset_ips'))
+                       asset_groups=report.get('asset_groups'),
+                       tags=report.get('tags'), asset_ips=report.get('asset_ips'),
+                       template_id=report.get('template_id'))
             report_list.append(r)
         if report.get('output_pdf') == 'True':
             r = Report(email=email, scan=scan, output='pdf',
-                            asset_groups=report.get('asset_groups'),
-                            tags=report.get('tags'), asset_ips=report.get('asset_ips'))
+                       asset_groups=report.get('asset_groups'),
+                       tags=report.get('tags'), asset_ips=report.get('asset_ips'),
+                       template_id=report.get('template_id'))
             report_list.append(r)
 
     session = qc.login(user, password)
     try:
         # Handle scan reports
-        scans = [x.scan for x in report_list if not x.scan.is_map()]
-        qc.get_scan_refs(scans, session)
+        scans = [x for x in report_list if not x.scan.is_map()]
+        qc.get_scan_refs([x.scan for x in scans], session)
         qc.get_asset_group_ips(scans, session)
-        qc.launch_scan_reports(scans, session)
 
         # Handle map reports
-        maps = [x.scan for x in report_list if x.scan.is_map()]
-        qc.get_map_refs(maps)
-        qc.launch_scan_reports(maps, session)
+        qc.get_map_refs([x.scan for x in report_list if x.scan.is_map()])
+        qc.launch_scan_reports(report_list, session)
         # wait for reports to complete save API calls..
         wait = 120
         logger.info('Waiting %s seconds for reports to complete...' % wait)

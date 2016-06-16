@@ -189,6 +189,8 @@ def get_asset_group_ips(scheduled_reports, session, params=None):
     dest_url = "/api/2.0/fo/asset/group/"
     asset_group_xpath = "./RESPONSE/ASSET_GROUP_LIST/ASSET_GROUP"
     ips_xpath = "./IP_SET"
+    if not scheduled_reports:
+        return
 
     response = request(params, session, dest_url)
     asset_group_list_xml = ET.fromstring(
@@ -236,7 +238,7 @@ def launch_scan_reports(scheduled_reports, session, params=None):
             params.update({"template_id": report.template_id})
         # Crappy way to update the report type for map scans
         if report.scan.is_map():
-            params.update({'report_type': 'Map'})
+            params.update({'report_type': 'Map', 'domain': 'none'})
         if report.scan.scan_state.lower() == 'processed':
             if 'ip_restriction' in params:
                 del params['ip_restriction']
@@ -380,8 +382,7 @@ def get_map_status(map_xml):
         return 'processed'
     if status == 'running':
         return 'unprocessed'
-    else:
-        return 'ihavenoidea.jpeg'
+    return 'ihavenoidea.jpeg'
 
 
 def get_map_refs(maps, map_xml_list=None):
@@ -391,7 +392,7 @@ def get_map_refs(maps, map_xml_list=None):
         for map_entry in maps:
             if map_entry.scan_name == map_xml.find('./TITLE').text:
                 map_entry.scan_id = map_xml.get('ref')
-                map_entry.scan_status = get_map_status(map_xml)
+                map_entry.scan_state = get_map_status(map_xml)
                 continue
 
 
