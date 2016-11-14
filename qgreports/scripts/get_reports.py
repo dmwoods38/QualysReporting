@@ -4,7 +4,6 @@ import time
 import os
 import qgreports.qualys_connector as qc
 import qgreports.config.settings
-import qgreports.elasticsearch_connector as es_connector
 import datetime
 import traceback
 import json
@@ -148,12 +147,12 @@ def main():
         elif destination == "local":
             logger.info('Reports saved locally in: ' + report_folder)
         elif destination == "elasticsearch":
+            import qgreports.elasticsearch_connector as es_connector
             logger.info('Putting scan results into elasticsearch')
             # Initialize elasticsearch mappings
             es = es_connector.initialize_es()
             for report in report_list:
-                sanitized_report_name = report.report_filename.replace('\\',
-                                                                       '')
+                sanitized_report_name = report.report_filename.replace('\\', '')
                 es_connector.es_scan_results(sanitized_report_name,
                                              report_tags=report.tags, es=es)
     except Exception as e:

@@ -33,7 +33,12 @@ def main(**kwargs):
                   'merchant_username': merchant_user}
         dest_url = '/api/2.0/fo/scan/pci/'
         response = qc.request(params, session, dest_url)
-        print response.text
+        sleeptime = 720
+        status_xml = ET.fromstring(response.text.encode('utf8', 'ignore'))
+        if 'Finished' in status_xml.findtext('.//TEXT', []):
+            print 'Scan ' + qg_scan.scan_id + \
+                  ' shared with merchant account'
+            return
 
         # Check share status
         for i in range(0, 3):
@@ -43,11 +48,11 @@ def main(**kwargs):
             status_xml = ET.fromstring(status_response.text.encode(
                 'utf8', 'ignore'
             ))
-            if status_xml.find('./RESPONSE/SCAN/STATUS').text == \
-                    'Finished':
+            if 'Finished' in status_xml.findtext('.//STATUS', []):
                 print 'Scan ' + qg_scan.scan_id + \
                       ' shared with merchant account'
                 return
+            print 'Waiting %s seconds for report to be shared' % sleeptime
             time.sleep(720)
         exit(2)
         # Should check the response for failed shares, and then
