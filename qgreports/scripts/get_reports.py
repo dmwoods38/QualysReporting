@@ -121,6 +121,7 @@ def main():
         unfinished_reports = []
         for report in report_list:
             if report.report_status is None:
+                logger.error('Could not download: ' + report.email.subject)
                 report_list.remove(report)
                 continue
             if report.report_status.lower() != 'finished':
