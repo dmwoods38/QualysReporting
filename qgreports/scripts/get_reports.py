@@ -139,6 +139,7 @@ def main():
 
         for report in report_list:
             if report.report_id is None:
+                logger.error('Could not download: ' + report.email.subject)
                 report_list.remove(report)
         # TODO:  Extract the destinations into some AbstractClass to allow
         #        easier extension.
