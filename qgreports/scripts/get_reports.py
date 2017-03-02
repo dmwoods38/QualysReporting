@@ -102,6 +102,13 @@ def main():
                        tags=report.get('tags'), asset_ips=report.get('asset_ips'),
                        template_id=report.get('template_id'))
             report_list.append(r)
+        if report.get('output_xml') == 'True':
+            r = Report(email=email, scan=scan, output='xml',
+                       asset_groups=report.get('asset_groups'),
+                       tags=report.get('tags'),
+                       asset_ips=report.get('asset_ips'),
+                       template_id=report.get('template_id'))
+            report_list.append(r)
 
     session = qc.login(user, password)
     try:
