@@ -100,6 +100,12 @@ def request(params, session, dest_url, verb='POST', headers=xreq_header,
         except Exception as e:
             logger.info(e)
             sys.exit(2)
+    x = ET.fromstring(s.text)
+    code = x.find("./RESPONSE/CODE")
+    if code is not None and code.text == '1965':
+        logger.info('API Time limit hit...Retrying')
+        time.sleep(int(x.find("./RESPONSE/ITEM_LIST/ITEM/VALUE").text) + 5)
+        return request(params, session, dest_url, verb, headers, data)
     return s
 
 
